@@ -60,4 +60,5 @@ dependencies {
     implementation(libs.androidx.media3.common)
     implementation(libs.androidx.media3.datasource)
     implementation(libs.kotlinx.coroutines.android)
+    testImplementation(libs.junit)
 }

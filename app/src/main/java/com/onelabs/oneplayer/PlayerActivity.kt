@@ -53,6 +53,9 @@ class PlayerActivity : AppCompatActivity() {
         const val EXTRA_CHANNELS_JSON = "channels_json"
         const val EXTRA_CHANNEL_INDEX = "channel_index"
         private const val AUTO_HIDE_DELAY_MS = 3500L
+
+        @Volatile
+        var inMemoryPlaylist: List<ChannelItem>? = null
     }
 
     data class ChannelItem(
@@ -160,9 +163,15 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun parseChannelsIntent() {
-        val jsonStr = intent.getStringExtra(EXTRA_CHANNELS_JSON)
         currentChannelIndex = intent.getIntExtra(EXTRA_CHANNEL_INDEX, -1)
+        val memList = inMemoryPlaylist
+        if (!memList.isNullOrEmpty()) {
+            channelsList.clear()
+            channelsList.addAll(memList)
+            return
+        }
 
+        val jsonStr = intent.getStringExtra(EXTRA_CHANNELS_JSON)
         if (!jsonStr.isNullOrEmpty()) {
             try {
                 val arr = JSONArray(jsonStr)
@@ -364,8 +373,15 @@ class PlayerActivity : AppCompatActivity() {
         })
     }
 
+    private var volumeDeltaAcc = 0f
+
     private fun setupGestures() {
         val gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDown(e: MotionEvent): Boolean {
+                volumeDeltaAcc = 0f
+                return true
+            }
+
             override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
                 toggleControls()
                 return true
@@ -390,22 +406,32 @@ class PlayerActivity : AppCompatActivity() {
                 if (!gesturesEnabled || e1 == null) return false
                 val width = gestureOverlay.width
                 val height = gestureOverlay.height
-                val deltaY = (e1.y - e2.y) / height
+                if (height <= 0 || width <= 0) return false
 
-                if (e1.x < width * 0.4f) {
+                // distanceY is positive when scrolling up, negative when scrolling down
+                val delta = distanceY / height.toFloat()
+
+                if (e1.x < width * 0.45f) {
                     // Brightness (Left side)
-                    currentBrightness = (currentBrightness + deltaY * 0.05f).coerceIn(0.05f, 1.0f)
+                    currentBrightness = (currentBrightness + delta).coerceIn(0.05f, 1.0f)
                     val lp = window.attributes
                     lp.screenBrightness = currentBrightness
                     window.attributes = lp
                     showHudToast("Brightness: ${(currentBrightness * 100).toInt()}%")
-                } else if (e1.x > width * 0.6f) {
+                } else if (e1.x > width * 0.55f) {
                     // Volume (Right side)
-                    val currentVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-                    val change = if (deltaY > 0) 1 else -1
-                    val newVol = (currentVol + change).coerceIn(0, maxVolume)
-                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0)
-                    showHudToast("Volume: ${(newVol * 100 / maxVolume)}%")
+                    volumeDeltaAcc += delta
+                    val stepThreshold = 1.0f / maxVolume.coerceAtLeast(1)
+                    if (kotlin.math.abs(volumeDeltaAcc) >= stepThreshold) {
+                        val steps = (volumeDeltaAcc / stepThreshold).toInt()
+                        volumeDeltaAcc -= steps * stepThreshold
+                        val currentVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+                        val newVol = (currentVol + steps).coerceIn(0, maxVolume)
+                        if (newVol != currentVol) {
+                            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0)
+                        }
+                        showHudToast("Volume: ${(newVol * 100 / maxVolume.coerceAtLeast(1))}%")
+                    }
                 }
                 return true
             }
@@ -658,7 +684,26 @@ class PlayerActivity : AppCompatActivity() {
         AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
             .setTitle("Select Audio Track")
             .setItems(audioTracks.toTypedArray()) { _, which ->
-                showHudToast("Selected: ${audioTracks[which]}")
+                var targetGroup: Tracks.Group? = null
+                var targetTrackIdx = 0
+                var counter = 0
+                for (g in trackGroups) {
+                    for (t in 0 until g.length) {
+                        if (counter == which) {
+                            targetGroup = g
+                            targetTrackIdx = t
+                            break
+                        }
+                        counter++
+                    }
+                    if (targetGroup != null) break
+                }
+                targetGroup?.let { tg ->
+                    val builder = trackSelector.buildUponParameters()
+                    val override = androidx.media3.common.TrackSelectionOverride(tg.mediaTrackGroup, targetTrackIdx)
+                    trackSelector.parameters = builder.clearOverridesOfType(C.TRACK_TYPE_AUDIO).addOverride(override).build()
+                }
+                showHudToast("Audio: ${audioTracks[which]}")
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -684,13 +729,31 @@ class PlayerActivity : AppCompatActivity() {
                 if (which == 0) {
                     trackSelector.parameters = trackSelector.buildUponParameters()
                         .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
+                        .clearOverridesOfType(C.TRACK_TYPE_TEXT)
                         .build()
                     btnSubtitles.text = "💬 CC Off"
                     showHudToast("Subtitles Disabled")
                 } else {
-                    trackSelector.parameters = trackSelector.buildUponParameters()
-                        .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
-                        .build()
+                    var targetGroup: Tracks.Group? = null
+                    var targetTrackIdx = 0
+                    var counter = 0
+                    for (g in subGroups) {
+                        for (t in 0 until g.length) {
+                            if (counter == which - 1) {
+                                targetGroup = g
+                                targetTrackIdx = t
+                                break
+                            }
+                            counter++
+                        }
+                        if (targetGroup != null) break
+                    }
+                    val builder = trackSelector.buildUponParameters().setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
+                    targetGroup?.let { tg ->
+                        val override = androidx.media3.common.TrackSelectionOverride(tg.mediaTrackGroup, targetTrackIdx)
+                        builder.clearOverridesOfType(C.TRACK_TYPE_TEXT).addOverride(override)
+                    }
+                    trackSelector.parameters = builder.build()
                     btnSubtitles.text = "💬 " + subOptions[which].substringBefore(" ")
                     showHudToast("Subtitles: ${subOptions[which]}")
                 }
@@ -708,6 +771,13 @@ class PlayerActivity : AppCompatActivity() {
             .setTitle("Subtitle Text Size")
             .setSingleChoiceItems(sizes, 1) { dialog, which ->
                 subTextSize = listOf("S", "M", "L", "XL")[which]
+                val sp = when (which) {
+                    0 -> 14f
+                    1 -> 18f
+                    2 -> 24f
+                    else -> 30f
+                }
+                playerView.subtitleView?.setFixedTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, sp)
                 showHudToast("Subtitle size: $subTextSize")
                 dialog.dismiss()
             }
@@ -830,10 +900,12 @@ class PlayerActivity : AppCompatActivity() {
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && player?.isPlaying == true) {
-            val params = PictureInPictureParams.Builder()
-                .setAspectRatio(Rational(16, 9))
-                .build()
-            enterPictureInPictureMode(params)
+            try {
+                val params = PictureInPictureParams.Builder()
+                    .setAspectRatio(Rational(16, 9))
+                    .build()
+                enterPictureInPictureMode(params)
+            } catch (_: Exception) {}
         }
     }
 
@@ -849,6 +921,7 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun releasePlayer() {
+        playerView.player = null
         player?.let { p ->
             p.stop()
             p.release()
@@ -888,5 +961,6 @@ class PlayerActivity : AppCompatActivity() {
         super.onDestroy()
         sleepTimer?.removeCallbacksAndMessages(null)
         releasePlayer()
+        inMemoryPlaylist = null
     }
 }

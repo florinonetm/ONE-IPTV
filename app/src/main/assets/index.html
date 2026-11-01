@@ -2219,6 +2219,17 @@
             }
         ];
 
+        // Safe JSON parsing helper to guard against corrupt or malformed localStorage
+        function safeJsonParse(str, fallback) {
+            if (!str) return fallback;
+            try {
+                const parsed = JSON.parse(str);
+                return parsed !== null && parsed !== undefined ? parsed : fallback;
+            } catch (_) {
+                return fallback;
+            }
+        }
+
         // State variables
         let channels = [...initialChannels];
         let movies = [...initialMovies];
@@ -2226,8 +2237,8 @@
         let activeCategory = 'all';
         let selectedChannelIndex = 0;
         let searchQuery = '';
-        let favorites = JSON.parse(localStorage.getItem('one_favorites') || '[]');
-        let recentWatched = JSON.parse(localStorage.getItem('one_recents') || '[0, 1, 3]');
+        let favorites = safeJsonParse(localStorage.getItem('one_favorites'), []);
+        let recentWatched = safeJsonParse(localStorage.getItem('one_recents'), [0, 1, 3]);
         let deviceMac = "B8:27:EB:4A:12:34";
         let deviceKey = "782914";
         let isPolling = false;
@@ -2242,7 +2253,7 @@
             { id: "cat_news", name: "Global News", icon: "📰", channelTitles: ["ONE News 24/7", "Euronews English"] },
             { id: "cat_discovery", name: "Science & Cosmos", icon: "🔭", channelTitles: ["NASA TV HD"] }
         ];
-        let customCategories = JSON.parse(localStorage.getItem('one_custom_categories') || 'null');
+        let customCategories = safeJsonParse(localStorage.getItem('one_custom_categories'), null);
         if (!customCategories || !Array.isArray(customCategories) || customCategories.length === 0) {
             customCategories = defaultCustomCategories;
             localStorage.setItem('one_custom_categories', JSON.stringify(customCategories));
@@ -2253,8 +2264,8 @@
 
         // Channel Sorting & Watch Frequency State
         let channelSortMode = localStorage.getItem('one_channel_sort') || 'number'; // 'number' | 'name' | 'frequency'
-        let channelWatchCounts = JSON.parse(localStorage.getItem('one_watch_frequency') || 'null');
-        if (!channelWatchCounts || typeof channelWatchCounts !== 'object') {
+        let channelWatchCounts = safeJsonParse(localStorage.getItem('one_watch_frequency'), null);
+        if (!channelWatchCounts || typeof channelWatchCounts !== 'object' || Array.isArray(channelWatchCounts)) {
             channelWatchCounts = {
                 "ONE News 24/7": 32,
                 "NASA TV HD": 26,
@@ -2530,7 +2541,7 @@
                         </div>
                     </div>
                     <div class="star-fav" title="Assign to Custom Category" style="font-size: 13px; margin-right: 4px;" onclick="openAssignCategoryForChannel(event, ${originalIndex})">🏷️</div>
-                    <div class="star-fav ${isFav ? 'active' : ''}" onclick="toggleFav(event, '${c.title}')">★</div>
+                    <div class="star-fav ${isFav ? 'active' : ''}" onclick="toggleFavByIndex(event, ${originalIndex})">★</div>
                 `;
 
                 row.onclick = () => {
@@ -2760,7 +2771,7 @@
         }
 
         function toggleFav(e, title) {
-            e.stopPropagation();
+            if (e && e.stopPropagation) e.stopPropagation();
             if (favorites.includes(title)) {
                 favorites = favorites.filter(t => t !== title);
             } else {
@@ -2770,6 +2781,12 @@
             renderCategories();
             renderChannelsList();
             updatePreviewPane();
+        }
+
+        function toggleFavByIndex(e, idx) {
+            if (e && e.stopPropagation) e.stopPropagation();
+            const ch = channels[idx];
+            if (ch) toggleFav(e, ch.title);
         }
 
         function toggleCurrentPreviewFav() {
@@ -2978,10 +2995,16 @@
                             ${p.type} · ${p.count || channels.length} items
                         </div>
                     </div>
-                    <button class="btn-secondary" style="padding: 5px 12px; font-size: 11px;" onclick="showToast('Active: ${p.name}')">Active</button>
+                    <button class="btn-secondary" style="padding: 5px 12px; font-size: 11px;" onclick="showPlaylistActive(event, ${idx})">Active</button>
                 `;
                 container.appendChild(item);
             });
+        }
+
+        function showPlaylistActive(e, idx) {
+            if (e && e.stopPropagation) e.stopPropagation();
+            const p = playlists[idx];
+            if (p) showToast(`Active: ${p.name}`);
         }
 
         function submitM3u() {
@@ -3173,6 +3196,12 @@
         };
 
         window.onBackPressed = function() {
+            // Dismiss active modal overlay if open
+            const activeModal = document.querySelector('.modal-overlay.active');
+            if (activeModal) {
+                activeModal.classList.remove('active');
+                return true;
+            }
             const activePanel = document.querySelector('.view-panel.active');
             if (activePanel && activePanel.id !== 'view-home') {
                 switchView('home');

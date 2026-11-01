@@ -63,15 +63,15 @@ object XtreamClient {
         conn.setRequestProperty("User-Agent", "ONEPlayer/1.02")
         conn.requestMethod = "GET"
 
-        val code = conn.responseCode
-        if (code in 200..299) {
-            val reader = BufferedReader(InputStreamReader(conn.inputStream, Charsets.UTF_8))
-            val text = reader.readText()
+        try {
+            val code = conn.responseCode
+            if (code in 200..299) {
+                return conn.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
+            } else {
+                throw RuntimeException("HTTP $code from Xtream server")
+            }
+        } finally {
             conn.disconnect()
-            return text
-        } else {
-            conn.disconnect()
-            throw RuntimeException("HTTP $code from Xtream server")
         }
     }
 

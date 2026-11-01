@@ -59,7 +59,6 @@ class MainActivity : AppCompatActivity() {
         webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
-            databaseEnabled = true
             mediaPlaybackRequiresUserGesture = false
             allowFileAccess = true
             allowContentAccess = true
@@ -105,10 +104,11 @@ class MainActivity : AppCompatActivity() {
             webView.evaluateJavascript("(function(){ if (window.onBackPressed && window.onBackPressed()) return true; return false; })()") { handled ->
                 if (handled != "true") {
                     runOnUiThread {
+                        if (isFinishing || isDestroyed) return@runOnUiThread
                         if (webView.canGoBack()) {
                             webView.goBack()
                         } else {
-                            super.onBackPressed()
+                            finish()
                         }
                     }
                 }
@@ -166,9 +166,10 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface
         fun checkLicense(mac: String, key: String) {
             io.execute {
+                var conn: HttpURLConnection? = null
                 try {
                     val url = "https://oneapk.ro/pair.php?mac=$mac&key=$key&check=1"
-                    val conn = URL(url).openConnection() as HttpURLConnection
+                    conn = URL(url).openConnection() as HttpURLConnection
                     conn.connectTimeout = 8000
                     conn.readTimeout = 8000
                     conn.instanceFollowRedirects = true
@@ -177,8 +178,7 @@ class MainActivity : AppCompatActivity() {
 
                     val code = conn.responseCode
                     val stream = if (code in 200..299) conn.inputStream else conn.errorStream
-                    val body = stream?.let { BufferedReader(InputStreamReader(it, Charsets.UTF_8)).readText() } ?: ""
-                    conn.disconnect()
+                    val body = stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() } ?: ""
 
                     val (success, message) = evaluateLicenseResponse(code, body)
                     val quoted = JSONObject.quote(message)
@@ -186,6 +186,8 @@ class MainActivity : AppCompatActivity() {
                 } catch (e: Exception) {
                     val quoted = JSONObject.quote(e.message ?: "Network error")
                     activity.evalJs("window.onLicenseResult(false, $quoted)")
+                } finally {
+                    conn?.disconnect()
                 }
             }
         }
@@ -193,9 +195,10 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface
         fun pollLicense(mac: String, key: String) {
             io.execute {
+                var conn: HttpURLConnection? = null
                 try {
                     val url = "https://oneapk.ro/pair.php?mac=$mac&key=$key&poll=1"
-                    val conn = URL(url).openConnection() as HttpURLConnection
+                    conn = URL(url).openConnection() as HttpURLConnection
                     conn.connectTimeout = 6000
                     conn.readTimeout = 6000
                     conn.instanceFollowRedirects = true
@@ -204,8 +207,7 @@ class MainActivity : AppCompatActivity() {
 
                     val code = conn.responseCode
                     val stream = if (code in 200..299) conn.inputStream else conn.errorStream
-                    val body = stream?.let { BufferedReader(InputStreamReader(it, Charsets.UTF_8)).readText() } ?: ""
-                    conn.disconnect()
+                    val body = stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() } ?: ""
 
                     val (success, message) = evaluateLicenseResponse(code, body)
                     val quoted = JSONObject.quote(message)
@@ -213,6 +215,8 @@ class MainActivity : AppCompatActivity() {
                 } catch (e: Exception) {
                     val quoted = JSONObject.quote(e.message ?: "poll error")
                     activity.evalJs("window.onLicensePoll(false, $quoted)")
+                } finally {
+                    conn?.disconnect()
                 }
             }
         }
@@ -267,9 +271,10 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface
         fun syncCloudPlaylists(mac: String) {
             io.execute {
+                var conn: HttpURLConnection? = null
                 try {
                     val url = "https://oneapk.ro/api/v1/playlists.php?mac=$mac"
-                    val conn = URL(url).openConnection() as HttpURLConnection
+                    conn = URL(url).openConnection() as HttpURLConnection
                     conn.connectTimeout = 8000
                     conn.readTimeout = 8000
                     conn.setRequestProperty("User-Agent", "ONEPlayer/1.02 (Android; SDK ${Build.VERSION.SDK_INT})")
@@ -277,18 +282,18 @@ class MainActivity : AppCompatActivity() {
 
                     val code = conn.responseCode
                     if (code in 200..299) {
-                        val body = BufferedReader(InputStreamReader(conn.inputStream, Charsets.UTF_8)).readText()
-                        conn.disconnect()
+                        val body = conn.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
                         val quoted = JSONObject.quote(body)
                         activity.evalJs("window.onCloudPlaylistsLoaded(true, $quoted)")
                     } else {
-                        conn.disconnect()
                         val quoted = JSONObject.quote("HTTP $code")
                         activity.evalJs("window.onCloudPlaylistsLoaded(false, $quoted)")
                     }
                 } catch (e: Exception) {
                     val quoted = JSONObject.quote(e.message ?: "Failed to sync playlists")
                     activity.evalJs("window.onCloudPlaylistsLoaded(false, $quoted)")
+                } finally {
+                    conn?.disconnect()
                 }
             }
         }
@@ -481,11 +486,32 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface
         fun playWithPlaylist(streamUrl: String, title: String, subtitle: String, channelsJson: String, currentIndex: Int) {
             activity.runOnUiThread {
+                try {
+                    val list = mutableListOf<PlayerActivity.ChannelItem>()
+                    if (channelsJson.isNotBlank() && channelsJson != "[]") {
+                        val arr = JSONArray(channelsJson)
+                        for (i in 0 until arr.length()) {
+                            val obj = arr.getJSONObject(i)
+                            list.add(
+                                PlayerActivity.ChannelItem(
+                                    title = obj.optString("title", "Channel ${i + 1}"),
+                                    url = obj.optString("url", ""),
+                                    group = obj.optString("group", "Channels"),
+                                    logo = obj.optString("logo", ""),
+                                    num = obj.optInt("num", i + 1)
+                                )
+                            )
+                        }
+                    }
+                    PlayerActivity.inMemoryPlaylist = list
+                } catch (_: Exception) {
+                    PlayerActivity.inMemoryPlaylist = null
+                }
+
                 val intent = Intent(activity, PlayerActivity::class.java).apply {
                     putExtra(PlayerActivity.EXTRA_URL, streamUrl)
                     putExtra(PlayerActivity.EXTRA_TITLE, title)
                     putExtra(PlayerActivity.EXTRA_SUBTITLE, subtitle)
-                    putExtra(PlayerActivity.EXTRA_CHANNELS_JSON, channelsJson)
                     putExtra(PlayerActivity.EXTRA_CHANNEL_INDEX, currentIndex)
                 }
                 activity.startActivity(intent)

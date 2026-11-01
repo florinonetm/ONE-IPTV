@@ -1,0 +1,2576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ONE™ IPTV Player</title>
+    <style>
+        :root {
+            --bg-base: #060913;
+            --bg-surface: #0b1120;
+            --bg-card: #131c31;
+            --bg-card-hover: #1c2847;
+            --bg-card-active: #24345d;
+            --gold: #FFB400;
+            --gold-glow: rgba(255, 180, 0, 0.4);
+            --cyan: #00E5FF;
+            --cyan-glow: rgba(0, 229, 255, 0.35);
+            --red: #FF3366;
+            --green: #00E676;
+            --text-main: #FFFFFF;
+            --text-dim: #94A3B8;
+            --text-muted: #64748B;
+            --border: #1e2b48;
+            --border-highlight: #334674;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Header */
+        header {
+            height: 60px;
+            background: linear-gradient(180deg, #0d1527 0%, #060913 100%);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            flex-shrink: 0;
+            z-index: 50;
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .logo-badge {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #FFB400 0%, #FF8800 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 16px var(--gold-glow);
+        }
+
+        .tagline {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--cyan);
+            background: rgba(0, 229, 255, 0.1);
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 229, 255, 0.25);
+        }
+
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .license-pill {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(0, 230, 118, 0.12);
+            border: 1px solid rgba(0, 230, 118, 0.3);
+            color: var(--green);
+        }
+
+        .license-pill.trial {
+            background: rgba(255, 180, 0, 0.12);
+            border: 1px solid rgba(255, 180, 0, 0.3);
+            color: var(--gold);
+        }
+
+        .license-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: currentColor;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .device-info-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 11px;
+            color: var(--text-dim);
+            font-family: monospace;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .quick-nav-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .quick-nav-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            color: var(--text-main);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .profile-avatar {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--red) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .clock {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--gold);
+            font-family: monospace;
+        }
+
+        /* Layout Container */
+        .app-body {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+
+        /* Sidebar Navigation */
+        nav.nav-sidebar {
+            width: 210px;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 14px 10px;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: var(--text-dim);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+
+        .nav-item:hover, .nav-item:focus {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(255, 180, 0, 0.18) 0%, transparent 100%);
+            color: var(--gold);
+            border-left: 3px solid var(--gold);
+            padding-left: 11px;
+        }
+
+        .nav-icon {
+            font-size: 18px;
+        }
+
+        .nav-spacer {
+            flex: 1;
+        }
+
+        .demo-play-btn {
+            background: linear-gradient(135deg, #FFB400 0%, #FF8800 100%);
+            color: #060913;
+            border: none;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--gold-glow);
+            transition: transform 0.15s;
+        }
+
+        .demo-play-btn:hover {
+            transform: scale(1.02);
+        }
+
+        /* Content Views */
+        main.content-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-base);
+            position: relative;
+        }
+
+        .view-panel {
+            display: none;
+            flex: 1;
+            height: 100%;
+            overflow-y: auto;
+            padding: 18px;
+        }
+
+        .view-panel.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ================= 1. HOME DASHBOARD ================= */
+        .home-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .hero-banner {
+            background: linear-gradient(135deg, #162447 0%, #0e172a 100%);
+            border: 1px solid var(--border-highlight);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-banner::after {
+            content: '';
+            position: absolute;
+            right: -20px;
+            top: -20px;
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, var(--gold-glow) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #FFFFFF;
+            margin-bottom: 6px;
+        }
+
+        .hero-desc {
+            font-size: 13px;
+            color: var(--text-dim);
+            max-width: 500px;
+            line-height: 1.5;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 14px;
+        }
+
+        .hero-stat-pill {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--cyan);
+        }
+
+        /* 4 Main IPTV Hero Cards */
+        .iptv-main-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .iptv-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .iptv-card:hover, .iptv-card:focus {
+            transform: translateY(-4px);
+            border-color: var(--gold);
+            background: var(--bg-card-hover);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px var(--gold-glow);
+            outline: none;
+        }
+
+        .iptv-card-icon {
+            font-size: 32px;
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            background: rgba(255, 180, 0, 0.1);
+            border: 1px solid rgba(255, 180, 0, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .iptv-card.movies .iptv-card-icon {
+            background: rgba(0, 229, 255, 0.1);
+            border-color: rgba(0, 229, 255, 0.25);
+        }
+
+        .iptv-card.series .iptv-card-icon {
+            background: rgba(255, 51, 102, 0.1);
+            border-color: rgba(255, 51, 102, 0.25);
+        }
+
+        .iptv-card.epg .iptv-card-icon {
+            background: rgba(0, 230, 118, 0.1);
+            border-color: rgba(0, 230, 118, 0.25);
+        }
+
+        .iptv-card-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .iptv-card-sub {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.4;
+        }
+
+        .iptv-card-badge {
+            margin-top: auto;
+            align-self: flex-start;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--gold);
+            padding: 3px 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        /* Recent Channels Row on Home */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recent-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .recent-card {
+            min-width: 200px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .recent-card:hover {
+            border-color: var(--cyan);
+            background: var(--bg-card-hover);
+        }
+
+        /* ================= 2. LIVE TV SPLIT VIEW ================= */
+        .live-tv-container {
+            display: flex;
+            height: 100%;
+            gap: 16px;
+            overflow: hidden;
+        }
+
+        /* Categories column */
+        .categories-pane {
+            width: 170px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 8px;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .cat-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            border-radius: 6px;
+            color: var(--text-dim);
+            font-size: 12px;
+            font-weight: 600;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+        }
+
+        .cat-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        .cat-btn.active {
+            background: var(--gold);
+            color: #060913;
+            font-weight: 800;
+        }
+
+        .cat-btn .count {
+            font-size: 10px;
+            opacity: 0.8;
+            font-family: monospace;
+        }
+
+        /* Channel List column */
+        .channels-pane {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .pane-search {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-card);
+        }
+
+        .pane-search input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #FFFFFF;
+            font-size: 12px;
+            width: 100%;
+        }
+
+        .channels-list-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .channel-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            background: var(--bg-card);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .channel-row:hover, .channel-row:focus {
+            background: var(--bg-card-hover);
+            border-color: var(--border-highlight);
+            outline: none;
+        }
+
+        .channel-row.selected {
+            background: var(--bg-card-active);
+            border-color: var(--gold);
+        }
+
+        .ch-num {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--gold);
+            min-width: 20px;
+        }
+
+        .ch-logo {
+            width: 34px;
+            height: 34px;
+            border-radius: 6px;
+            background: #080d19;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-size: 16px;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .ch-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .ch-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ch-name {
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-main);
+        }
+
+        .ch-now {
+            font-size: 10px;
+            color: var(--text-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 2px;
+        }
+
+        .star-fav {
+            font-size: 14px;
+            color: var(--border);
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .star-fav.active {
+            color: var(--gold);
+        }
+
+        /* Detail & Preview Column */
+        .preview-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            overflow-y: auto;
+            gap: 16px;
+        }
+
+        .preview-window {
+            height: 200px;
+            background: #060913;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .preview-backdrop {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle, #1a2744 0%, #060913 80%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+        }
+
+        .preview-play-overlay {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.65);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--gold);
+            box-shadow: 0 0 20px var(--gold-glow);
+            transition: transform 0.2s;
+        }
+
+        .preview-window:hover .preview-play-overlay {
+            transform: scale(1.1);
+        }
+
+        .preview-live-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #D32F2F;
+            color: #FFFFFF;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
+
+        .preview-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .preview-channel-name {
+            font-size: 18px;
+            font-weight: 800;
+            color: #FFFFFF;
+        }
+
+        .preview-program-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .preview-program-desc {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        .program-progress-bar {
+            height: 4px;
+            background: #1e293b;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 6px 0;
+        }
+
+        .program-progress-fill {
+            height: 100%;
+            background: var(--gold);
+            width: 45%;
+        }
+
+        .program-time-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-dim);
+            font-family: monospace;
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .btn-play-full {
+            flex: 1;
+            background: linear-gradient(135deg, #FFB400 0%, #FF8800 100%);
+            color: #060913;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px var(--gold-glow);
+            transition: all 0.2s;
+        }
+
+        .btn-play-full:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-fav-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* EPG upcoming schedule on right */
+        .epg-schedule-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .epg-schedule-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .epg-item {
+            display: flex;
+            gap: 10px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 11px;
+        }
+
+        .epg-item:last-child {
+            border-bottom: none;
+        }
+
+        .epg-item-time {
+            color: var(--gold);
+            font-weight: 600;
+            min-width: 75px;
+            font-family: monospace;
+        }
+
+        .epg-item-name {
+            color: var(--text-dim);
+            flex: 1;
+        }
+
+        /* ================= 3. EPG TIMELINE VIEW ================= */
+        .epg-timeline-view {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .epg-time-header {
+            height: 40px;
+            background: #090e1a;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding-left: 160px;
+            position: relative;
+        }
+
+        .time-slot {
+            width: 140px;
+            font-size: 11px;
+            color: var(--text-dim);
+            font-family: monospace;
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+            padding-left: 8px;
+        }
+
+        .epg-grid-rows {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        .epg-row {
+            display: flex;
+            height: 52px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .epg-ch-col {
+            width: 160px;
+            background: #0d1424;
+            border-right: 1px solid var(--border);
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+        }
+
+        .epg-programs-row {
+            display: flex;
+            flex: 1;
+            position: relative;
+        }
+
+        .epg-prog-block {
+            height: 100%;
+            background: var(--bg-card);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 6px 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .epg-prog-block:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .epg-prog-block.now {
+            border-top: 2px solid var(--gold);
+            background: rgba(255, 180, 0, 0.08);
+        }
+
+        .epg-prog-title {
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .epg-prog-time {
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        /* ================= 4. MOVIES & SERIES GRIDS ================= */
+        .category-filter-bar {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 12px;
+            margin-bottom: 14px;
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .filter-chip {
+            padding: 6px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-dim);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+
+        .filter-chip.active {
+            background: var(--gold);
+            color: #060913;
+            border-color: var(--gold);
+            font-weight: 800;
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
+            overflow-y: auto;
+            padding-bottom: 24px;
+        }
+
+        .media-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .media-card:hover, .media-card:focus {
+            border-color: var(--cyan);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            outline: none;
+        }
+
+        .media-poster {
+            height: 210px;
+            background: #111a2e;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            overflow: hidden;
+        }
+
+        .media-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .media-badge-quality {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.75);
+            color: var(--gold);
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--gold);
+        }
+
+        .media-info {
+            padding: 10px;
+            flex: 1;
+        }
+
+        .media-name {
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .media-sub {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 3px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* ================= 5. PAIRING & PLAYLISTS & SETTINGS ================= */
+        .container-box {
+            max-width: 720px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            width: 100%;
+        }
+
+        .card-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px;
+        }
+
+        .card-box h2 {
+            font-size: 17px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--gold);
+        }
+
+        .card-box p {
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        .pair-display {
+            display: flex;
+            gap: 16px;
+            margin: 18px 0;
+        }
+
+        .pair-item {
+            flex: 1;
+            background: #080d1a;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .pair-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+
+        .pair-val {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--gold);
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        .actions-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FFB400 0%, #FF8800 100%);
+            color: #060913;
+            border: none;
+            padding: 9px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary {
+            background: var(--bg-surface);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 9px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--cyan);
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: #090e1a;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 9px 12px;
+            color: var(--text-main);
+            font-size: 13px;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--gold);
+        }
+
+        /* Settings Rows */
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .setting-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .setting-name {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .setting-desc {
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .setting-control select {
+            background: #090e1a;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            outline: none;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-highlight);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            padding: 22px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #111a2e;
+            border: 1px solid var(--gold);
+            color: var(--text-main);
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.25s ease;
+            z-index: 200;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo-wrap" onclick="switchView('home')">
+            <span class="logo-badge">ONE™</span>
+            <span class="tagline">IPTV Player</span>
+        </div>
+
+        <div class="header-center">
+            <div id="licensePill" class="license-pill trial" onclick="switchView('pairing')">
+                <span class="license-dot"></span>
+                <span id="licenseText">Trial · 31 Days Left</span>
+            </div>
+            <div class="device-info-pill" onclick="switchView('pairing')">
+                <span>MAC:</span>
+                <strong id="headerMac">--:--:--:--:--:--</strong>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <button class="quick-nav-btn" onclick="openGlobalSearch()">
+                <span>🔍</span>
+                <span>Search</span>
+            </button>
+            <div class="profile-btn" onclick="switchProfile()">
+                <div class="profile-avatar" id="avatarLetter">M</div>
+                <span id="currentProfileName">Main</span>
+            </div>
+            <div class="clock" id="clockDisplay">12:00</div>
+        </div>
+    </header>
+
+    <!-- App Body -->
+    <div class="app-body">
+        <!-- Sidebar Navigation -->
+        <nav class="nav-sidebar">
+            <a class="nav-item active" onclick="switchView('home')">
+                <span class="nav-icon">🏠</span>
+                <span>Dashboard</span>
+            </a>
+            <a class="nav-item" onclick="switchView('live')">
+                <span class="nav-icon">📺</span>
+                <span>Live TV</span>
+            </a>
+            <a class="nav-item" onclick="switchView('epg')">
+                <span class="nav-icon">📋</span>
+                <span>TV Guide (EPG)</span>
+            </a>
+            <a class="nav-item" onclick="switchView('movies')">
+                <span class="nav-icon">🎬</span>
+                <span>Movies (VOD)</span>
+            </a>
+            <a class="nav-item" onclick="switchView('series')">
+                <span class="nav-icon">🎞️</span>
+                <span>Series</span>
+            </a>
+            <a class="nav-item" onclick="switchView('playlists')">
+                <span class="nav-icon">📂</span>
+                <span>Playlists</span>
+            </a>
+            <a class="nav-item" onclick="switchView('pairing')">
+                <span class="nav-icon">🔗</span>
+                <span>Pairing &amp; Key</span>
+            </a>
+            <a class="nav-item" onclick="switchView('settings')">
+                <span class="nav-icon">⚙️</span>
+                <span>Settings</span>
+            </a>
+
+            <div class="nav-spacer"></div>
+
+            <button class="demo-play-btn" onclick="playCurrentChannel(0)">
+                <span>▶</span>
+                <span>Quick Play</span>
+            </button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="content-view">
+
+            <!-- 1. HOME DASHBOARD -->
+            <section id="view-home" class="view-panel active">
+                <div class="home-dashboard">
+                    <div class="hero-banner">
+                        <div>
+                            <div class="hero-title">ONE™ IPTV Entertainment Center</div>
+                            <div class="hero-desc">
+                                Hardware-accelerated multi-format IPTV engine supporting Live HLS, VOD, Xtream Codes API, and cloud playlist pairing with oneapk.ro.
+                            </div>
+                            <div class="hero-stats">
+                                <span class="hero-stat-pill" id="statLiveCount">📺 12 Channels</span>
+                                <span class="hero-stat-pill" id="statVodCount">🎬 6 Movies</span>
+                                <span class="hero-stat-pill" id="statSeriesCount">🎞️ 3 Series</span>
+                                <span class="hero-stat-pill" id="statEnginePill">⚡ Media3 ExoPlayer</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4 Big Hero Cards -->
+                    <div class="iptv-main-cards">
+                        <div class="iptv-card" tabindex="0" onclick="switchView('live')">
+                            <div class="iptv-card-icon">📺</div>
+                            <div class="iptv-card-title">LIVE TV</div>
+                            <div class="iptv-card-sub">Watch live broadcasts, sports matches, and news with instant channel surfing.</div>
+                            <div class="iptv-card-badge">OPEN GUIDE →</div>
+                        </div>
+
+                        <div class="iptv-card movies" tabindex="0" onclick="switchView('movies')">
+                            <div class="iptv-card-icon">🎬</div>
+                            <div class="iptv-card-title">MOVIES</div>
+                            <div class="iptv-card-sub">Explore full movies catalog with synopsis, ratings, and HD playback.</div>
+                            <div class="iptv-card-badge">BROWSE VOD →</div>
+                        </div>
+
+                        <div class="iptv-card series" tabindex="0" onclick="switchView('series')">
+                            <div class="iptv-card-icon">🎞️</div>
+                            <div class="iptv-card-title">SERIES</div>
+                            <div class="iptv-card-sub">Binge TV shows by seasons and episodes with auto-resume tracking.</div>
+                            <div class="iptv-card-badge">EXPLORE SHOWS →</div>
+                        </div>
+
+                        <div class="iptv-card epg" tabindex="0" onclick="switchView('epg')">
+                            <div class="iptv-card-icon">📋</div>
+                            <div class="iptv-card-title">TV GUIDE</div>
+                            <div class="iptv-card-sub">Interactive timeline Electronic Program Guide (EPG) with program schedules.</div>
+                            <div class="iptv-card-badge">VIEW TIMELINE →</div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Channels -->
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span>🕒</span>
+                            <span>Recently Watched &amp; Favorites</span>
+                        </div>
+                    </div>
+                    <div class="recent-scroll" id="recentChannelsBar">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. LIVE TV SPLIT VIEW -->
+            <section id="view-live" class="view-panel" style="padding: 10px;">
+                <div class="live-tv-container">
+                    <!-- Column 1: Categories -->
+                    <div class="categories-pane" id="liveCategoriesPane">
+                        <!-- Category buttons -->
+                    </div>
+
+                    <!-- Column 2: Channels -->
+                    <div class="channels-pane">
+                        <div class="pane-search">
+                            <span>🔍</span>
+                            <input type="text" id="liveSearchInput" placeholder="Filter channels..." oninput="onLiveSearch(this.value)">
+                        </div>
+                        <div class="channels-list-scroll" id="channelsListScroll">
+                            <!-- Channel items -->
+                        </div>
+                    </div>
+
+                    <!-- Column 3: Live Preview & EPG Info -->
+                    <div class="preview-pane">
+                        <div class="preview-window" onclick="launchFullscreenPlayer()">
+                            <div class="preview-backdrop" id="previewBackdrop">📺</div>
+                            <div class="preview-live-tag">● LIVE NOW</div>
+                            <div class="preview-play-overlay">▶</div>
+                        </div>
+
+                        <div class="preview-meta">
+                            <div class="preview-channel-name" id="previewChName">Channel Name</div>
+                            <div class="preview-program-title" id="previewProgTitle">Program Title</div>
+                            <div class="program-progress-bar">
+                                <div class="program-progress-fill" id="previewProgFill"></div>
+                            </div>
+                            <div class="program-time-labels">
+                                <span id="previewProgStart">10:00</span>
+                                <span id="previewProgEnd">11:30</span>
+                            </div>
+                            <div class="preview-program-desc" id="previewProgDesc">
+                                Comprehensive live broadcast stream with timeline tracking and high-definition multi-bitrate audio/video feeds.
+                            </div>
+                        </div>
+
+                        <div class="preview-actions">
+                            <button class="btn-play-full" onclick="launchFullscreenPlayer()">
+                                <span>▶</span>
+                                <span>WATCH FULLSCREEN</span>
+                            </button>
+                            <button class="btn-fav-toggle" id="btnPreviewFav" onclick="toggleCurrentPreviewFav()">★</button>
+                        </div>
+
+                        <div class="epg-schedule-box">
+                            <div class="epg-schedule-title">Upcoming On This Channel</div>
+                            <div id="epgUpcomingList">
+                                <!-- Upcoming list -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. EPG TIMELINE VIEW -->
+            <section id="view-epg" class="view-panel" style="padding: 10px;">
+                <div class="epg-timeline-view">
+                    <div class="epg-time-header" id="epgTimeSlotsHeader">
+                        <div class="time-slot">08:00</div>
+                        <div class="time-slot">08:30</div>
+                        <div class="time-slot">09:00</div>
+                        <div class="time-slot">09:30</div>
+                        <div class="time-slot">10:00</div>
+                        <div class="time-slot">10:30</div>
+                        <div class="time-slot">11:00</div>
+                    </div>
+                    <div class="epg-grid-rows" id="epgGridRows">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. MOVIES (VOD) VIEW -->
+            <section id="view-movies" class="view-panel">
+                <div class="category-filter-bar" id="movieFilterBar">
+                    <button class="filter-chip active" onclick="filterMovieGenre('all')">All Movies</button>
+                    <button class="filter-chip" onclick="filterMovieGenre('Action')">Action</button>
+                    <button class="filter-chip" onclick="filterMovieGenre('Sci-Fi')">Sci-Fi</button>
+                    <button class="filter-chip" onclick="filterMovieGenre('Thriller')">Thriller</button>
+                    <button class="filter-chip" onclick="filterMovieGenre('Animation')">Animation</button>
+                    <button class="filter-chip" onclick="filterMovieGenre('Drama')">Drama</button>
+                </div>
+                <div class="media-grid" id="moviesGrid">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- 5. SERIES VIEW -->
+            <section id="view-series" class="view-panel">
+                <div class="category-filter-bar">
+                    <button class="filter-chip active">All TV Shows</button>
+                    <button class="filter-chip">Drama</button>
+                    <button class="filter-chip">Sci-Fi</button>
+                    <button class="filter-chip">Crime</button>
+                </div>
+                <div class="media-grid" id="seriesGrid">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- 6. PLAYLISTS & XTREAM VIEW -->
+            <section id="view-playlists" class="view-panel">
+                <div class="container-box">
+                    <div class="card-box">
+                        <h2><span>📂</span> Playlist &amp; Xtream Management</h2>
+                        <p>Manage M3U playlist URLs or enter your Xtream Codes API server credentials.</p>
+
+                        <div id="playlistsContainer" style="margin: 16px 0; display: flex; flex-direction: column; gap: 10px;">
+                            <!-- Active playlists -->
+                        </div>
+
+                        <div class="actions-row">
+                            <button class="btn-primary" onclick="openModal('modalM3u')">+ Add M3U URL</button>
+                            <button class="btn-secondary" onclick="openModal('modalXtream')">+ Add Xtream Codes</button>
+                            <button class="btn-secondary" onclick="syncCloudPlaylists()">☁ Sync oneapk.ro</button>
+                            <button class="btn-secondary" onclick="resetDefaultChannels()">↺ Reload Pre-set Channels</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. PAIRING & LICENSE VIEW -->
+            <section id="view-pairing" class="view-panel">
+                <div class="container-box">
+                    <div class="card-box">
+                        <h2><span>🔗</span> oneapk.ro Device Activation &amp; Pairing</h2>
+                        <p>Pair this device with your <strong>oneapk.ro</strong> dashboard to remotely upload M3U playlists, manage EPG sources, and manage subscriptions.</p>
+
+                        <div class="pair-display">
+                            <div class="pair-item">
+                                <div class="pair-label">Device MAC Address</div>
+                                <div class="pair-val" id="macVal">--:--:--:--:--:--</div>
+                            </div>
+                            <div class="pair-item">
+                                <div class="pair-label">6-Digit Pairing Key</div>
+                                <div class="pair-val" id="keyVal">------</div>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 13px; color: var(--text-dim); margin-bottom: 16px;">
+                            <strong>Status:</strong> <span id="licenseDetailText" style="color: var(--gold);">31-day Free Trial Active</span>
+                        </div>
+
+                        <div class="actions-row">
+                            <button class="btn-primary" onclick="checkLicense()">Check License</button>
+                            <button class="btn-secondary" onclick="toggleAutoPoll()" id="btnAutoPoll">Auto-Poll (Off)</button>
+                            <button class="btn-secondary" onclick="generateNewPairingKey()">New 6-Digit Key</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 8. SETTINGS VIEW -->
+            <section id="view-settings" class="view-panel">
+                <div class="container-box">
+                    <div class="card-box">
+                        <h2><span>⚙️</span> Player Engine &amp; Preferences</h2>
+                        
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-name">Streaming Engine</div>
+                                <div class="setting-desc">Hardware-accelerated media decoding engine</div>
+                            </div>
+                            <div class="setting-control">
+                                <select id="setEngine">
+                                    <option>AndroidX Media3 ExoPlayer (Default)</option>
+                                    <option>System Decoder</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-name">Stream Buffer Size</div>
+                                <div class="setting-desc">Increases buffer to eliminate buffering on slow networks</div>
+                            </div>
+                            <div class="setting-control">
+                                <select id="setBuffer">
+                                    <option>Standard (15s)</option>
+                                    <option>Large (30s)</option>
+                                    <option>Ultra Low Latency (5s)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-name">Default Aspect Ratio</div>
+                                <div class="setting-desc">Aspect ratio used when opening fullscreen playback</div>
+                            </div>
+                            <div class="setting-control">
+                                <select id="setAspect">
+                                    <option>Fit (Original 16:9)</option>
+                                    <option>Stretch (Fill Screen)</option>
+                                    <option>Zoom (Crop)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-name">Parental PIN Protection</div>
+                                <div class="setting-desc">Lock adult and 18+ channel categories with PIN</div>
+                            </div>
+                            <div class="setting-control">
+                                <button class="btn-secondary" onclick="setParentalPin()">Configure PIN</button>
+                            </div>
+                        </div>
+
+                        <div class="actions-row">
+                            <button class="btn-primary" onclick="saveSettings()">Save Preferences</button>
+                            <button class="btn-secondary" onclick="clearStreamCache()">Clear Cache</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Modal: Add M3U -->
+    <div class="modal-overlay" id="modalM3u">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Add M3U Playlist</h3>
+                <button class="modal-close" onclick="closeModal('modalM3u')">✕</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Playlist Name</label>
+                <input type="text" class="form-input" id="m3uName" placeholder="e.g. World TV &amp; Sports">
+            </div>
+            <div class="form-group">
+                <label class="form-label">M3U or M3U8 URL</label>
+                <input type="text" class="form-input" id="m3uUrl" placeholder="https://example.com/playlist.m3u">
+            </div>
+            <div class="actions-row">
+                <button class="btn-primary" onclick="submitM3u()">Load Playlist</button>
+                <button class="btn-secondary" onclick="closeModal('modalM3u')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Xtream Codes -->
+    <div class="modal-overlay" id="modalXtream">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Xtream Codes API Login</h3>
+                <button class="modal-close" onclick="closeModal('modalXtream')">✕</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Server URL</label>
+                <input type="text" class="form-input" id="xtreamServer" placeholder="http://xtream-server.com:8080">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-input" id="xtreamUser" placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="xtreamPass" placeholder="Enter password">
+            </div>
+            <div class="actions-row">
+                <button class="btn-primary" onclick="submitXtream()">Connect Xtream</button>
+                <button class="btn-secondary" onclick="closeModal('modalXtream')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Movie Detail -->
+    <div class="modal-overlay" id="modalMovie">
+        <div class="modal-card" style="max-width: 580px;">
+            <div class="modal-header">
+                <h3 id="modalMovieTitle">Movie Title</h3>
+                <button class="modal-close" onclick="closeModal('modalMovie')">✕</button>
+            </div>
+            <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+                <div id="modalMoviePoster" style="width: 120px; height: 170px; background: #162447; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 40px; flex-shrink: 0;"></div>
+                <div style="flex: 1; font-size: 13px; color: var(--text-dim); line-height: 1.5;">
+                    <div style="font-weight: 700; color: var(--gold); margin-bottom: 4px;" id="modalMovieMeta">2024 · 2h 15m · Sci-Fi</div>
+                    <div style="margin-bottom: 8px;" id="modalMovieRating">⭐ 8.7 / 10 · IMDb</div>
+                    <div id="modalMovieSynopsis">Synopsis overview...</div>
+                </div>
+            </div>
+            <div class="actions-row">
+                <button class="btn-primary" id="btnMovieWatch" style="flex: 1;">▶ WATCH MOVIE</button>
+                <button class="btn-secondary" onclick="closeModal('modalMovie')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Action completed</div>
+
+    <script>
+        // Pre-configured Verified Legal 24/7 Public Channels
+        const initialChannels = [
+            {
+                num: 1,
+                title: "ONE News 24/7",
+                group: "News",
+                epg: "Global Live Headlines · World Reports",
+                url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+                icon: "📰",
+                logo: ""
+            },
+            {
+                num: 2,
+                title: "NASA TV HD",
+                group: "Documentary",
+                epg: "ISS Live Earth Views & Space Missions",
+                url: "https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8",
+                icon: "🚀",
+                logo: ""
+            },
+            {
+                num: 3,
+                title: "Euronews English",
+                group: "News",
+                epg: "European & World Live Financial News",
+                url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+                icon: "🌐",
+                logo: ""
+            },
+            {
+                num: 4,
+                title: "Red Bull TV Live",
+                group: "Sports",
+                epg: "Extreme Sports Championship Finals",
+                url: "https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8",
+                icon: "⚽",
+                logo: ""
+            },
+            {
+                num: 5,
+                title: "Cinema Premier HD",
+                group: "Movies",
+                epg: "Sci-Fi & Action Festival",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                icon: "🎥",
+                logo: ""
+            },
+            {
+                num: 6,
+                title: "Discovery Oceans 4K",
+                group: "Documentary",
+                epg: "Deep Sea Exploration 4K Ultra",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                icon: "🌍",
+                logo: ""
+            },
+            {
+                num: 7,
+                title: "ONE Music Hits",
+                group: "Music",
+                epg: "Top 40 Live Chartbusters",
+                url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+                icon: "🎵",
+                logo: ""
+            },
+            {
+                num: 8,
+                title: "Toon Universe",
+                group: "Kids",
+                epg: "Animated Shorts & Classic Adventures",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                icon: "🧸",
+                logo: ""
+            },
+            {
+                num: 9,
+                title: "Action Sports Live",
+                group: "Sports",
+                epg: "Super League Derby & Highlights",
+                url: "https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8",
+                icon: "🏆",
+                logo: ""
+            },
+            {
+                num: 10,
+                title: "France 24 English",
+                group: "News",
+                epg: "International Broadcasts & Debate",
+                url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+                icon: "🗼",
+                logo: ""
+            }
+        ];
+
+        const initialMovies = [
+            {
+                id: "m1",
+                name: "Cosmic Odyssey",
+                year: "2024",
+                genre: "Sci-Fi",
+                rating: "8.9",
+                duration: "2h 18m",
+                quality: "4K",
+                synopsis: "When humanity detects a synthetic frequency emanating from the dark side of Jupiter, an elite expedition prepares for the voyage.",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+                icon: "🚀"
+            },
+            {
+                id: "m2",
+                name: "Apex Velocity",
+                year: "2023",
+                genre: "Action",
+                rating: "8.2",
+                duration: "1h 55m",
+                quality: "4K",
+                synopsis: "An adrenaline-fueled street racing syndicate clashes with international espionage in the neon-drenched streets of Tokyo.",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+                icon: "🏎️"
+            },
+            {
+                id: "m3",
+                name: "The Shadow Protocol",
+                year: "2024",
+                genre: "Thriller",
+                rating: "8.0",
+                duration: "2h 04m",
+                quality: "FHD",
+                synopsis: "A rogue intelligence operative uncovers a digital surveillance backdoor threatening world banking networks.",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackSeeTheWorld.mp4",
+                icon: "🕵️"
+            },
+            {
+                id: "m4",
+                name: "Big Buck Bunny",
+                year: "2022",
+                genre: "Animation",
+                rating: "8.6",
+                duration: "1h 32m",
+                quality: "FHD",
+                synopsis: "A cheerful giant rabbit confronts forest bullies with comedic ingenuity and charming friendship.",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                icon: "🐰"
+            },
+            {
+                id: "m5",
+                name: "Quantum Paradox",
+                year: "2024",
+                genre: "Sci-Fi",
+                rating: "8.4",
+                duration: "2h 10m",
+                quality: "4K",
+                synopsis: "Physicists probing dark energy accidentally breach a parallel timeline where Earth developed without fossil fuels.",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                icon: "🌌"
+            },
+            {
+                id: "m6",
+                name: "Iron Vanguard",
+                year: "2023",
+                genre: "Action",
+                rating: "7.8",
+                duration: "2h 00m",
+                quality: "FHD",
+                synopsis: "Veterans team up to recover a stolen autonomous carrier before it reaches hostile waters.",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+                icon: "⚔️"
+            }
+        ];
+
+        const initialSeries = [
+            {
+                id: "s1",
+                name: "Cyber Horizon",
+                seasons: 3,
+                episodes: 28,
+                genre: "Sci-Fi",
+                rating: "9.2",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                icon: "🤖"
+            },
+            {
+                id: "s2",
+                name: "The Crown Syndicate",
+                seasons: 4,
+                episodes: 36,
+                genre: "Crime",
+                rating: "9.0",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+                icon: "👑"
+            },
+            {
+                id: "s3",
+                name: "Silicon Dynasty",
+                seasons: 2,
+                episodes: 18,
+                genre: "Drama",
+                rating: "8.5",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+                icon: "💻"
+            }
+        ];
+
+        // State variables
+        let channels = [...initialChannels];
+        let movies = [...initialMovies];
+        let series = [...initialSeries];
+        let activeCategory = 'all';
+        let selectedChannelIndex = 0;
+        let searchQuery = '';
+        let favorites = JSON.parse(localStorage.getItem('one_favorites') || '[]');
+        let recentWatched = JSON.parse(localStorage.getItem('one_recents') || '[0, 1, 3]');
+        let deviceMac = "B8:27:EB:4A:12:34";
+        let deviceKey = "782914";
+        let isPolling = false;
+        let pollTimer = null;
+        let playlists = [
+            { name: "Default Curated HD", count: 10, type: "M3U" }
+        ];
+
+        // Initialize on DOM Ready
+        window.addEventListener('DOMContentLoaded', () => {
+            initDevice();
+            renderCategories();
+            renderChannelsList();
+            updatePreviewPane();
+            renderRecentBar();
+            renderMovies();
+            renderSeries();
+            renderEpgGrid();
+            renderPlaylists();
+            startClock();
+        });
+
+        function initDevice() {
+            if (window.OneNative && window.OneNative.getDeviceId) {
+                deviceMac = window.OneNative.getDeviceId();
+            }
+            document.getElementById('headerMac').innerText = deviceMac;
+            document.getElementById('macVal').innerText = deviceMac;
+
+            let savedKey = localStorage.getItem('one_device_key');
+            if (!savedKey) {
+                savedKey = Math.floor(100000 + Math.random() * 900000).toString();
+                localStorage.setItem('one_device_key', savedKey);
+            }
+            deviceKey = savedKey;
+            document.getElementById('keyVal').innerText = deviceKey;
+
+            // Load saved playlists if any
+            if (window.OneNative && window.OneNative.loadPlaylists) {
+                try {
+                    const saved = JSON.parse(window.OneNative.loadPlaylists());
+                    if (Array.isArray(saved) && saved.length > 0) {
+                        playlists = saved;
+                    }
+                } catch (_) {}
+            }
+        }
+
+        function generateNewPairingKey() {
+            deviceKey = Math.floor(100000 + Math.random() * 900000).toString();
+            localStorage.setItem('one_device_key', deviceKey);
+            document.getElementById('keyVal').innerText = deviceKey;
+            showToast("New pairing key: " + deviceKey);
+        }
+
+        function startClock() {
+            function update() {
+                const now = new Date();
+                const hrs = String(now.getHours()).padStart(2, '0');
+                const mins = String(now.getMinutes()).padStart(2, '0');
+                document.getElementById('clockDisplay').innerText = `${hrs}:${mins}`;
+            }
+            update();
+            setInterval(update, 20000);
+        }
+
+        // View Switching
+        function switchView(viewId) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active'));
+
+            const navMatch = Array.from(document.querySelectorAll('.nav-item')).find(el => el.getAttribute('onclick')?.includes(viewId));
+            if (navMatch) navMatch.classList.add('active');
+
+            const panel = document.getElementById(`view-${viewId}`);
+            if (panel) panel.classList.add('active');
+
+            if (viewId === 'live') {
+                renderChannelsList();
+                updatePreviewPane();
+            } else if (viewId === 'epg') {
+                renderEpgGrid();
+            }
+        }
+
+        // Categories & Channel List (Standard 3-Column IPTV Layout)
+        function getCategories() {
+            const set = new Set();
+            channels.forEach(c => set.add(c.group));
+            return Array.from(set);
+        }
+
+        function renderCategories() {
+            const pane = document.getElementById('liveCategoriesPane');
+            pane.innerHTML = '';
+
+            const allBtn = document.createElement('button');
+            allBtn.className = `cat-btn ${activeCategory === 'all' ? 'active' : ''}`;
+            allBtn.innerHTML = `<span>All Channels</span> <span class="count">${channels.length}</span>`;
+            allBtn.onclick = () => selectCategory('all');
+            pane.appendChild(allBtn);
+
+            const favBtn = document.createElement('button');
+            favBtn.className = `cat-btn ${activeCategory === 'favorites' ? 'active' : ''}`;
+            favBtn.innerHTML = `<span>⭐ Favorites</span> <span class="count">${favorites.length}</span>`;
+            favBtn.onclick = () => selectCategory('favorites');
+            pane.appendChild(favBtn);
+
+            getCategories().forEach(cat => {
+                const cnt = channels.filter(c => c.group === cat).length;
+                const b = document.createElement('button');
+                b.className = `cat-btn ${activeCategory === cat ? 'active' : ''}`;
+                b.innerHTML = `<span>${cat}</span> <span class="count">${cnt}</span>`;
+                b.onclick = () => selectCategory(cat);
+                pane.appendChild(b);
+            });
+        }
+
+        function selectCategory(cat) {
+            activeCategory = cat;
+            renderCategories();
+            renderChannelsList();
+        }
+
+        function renderChannelsList() {
+            const scroll = document.getElementById('channelsListScroll');
+            scroll.innerHTML = '';
+
+            const filtered = channels.filter((c, idx) => {
+                const matchCat = (activeCategory === 'all') ||
+                    (activeCategory === 'favorites' ? favorites.includes(c.title) : c.group === activeCategory);
+                const matchSearch = !searchQuery || c.title.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchCat && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                scroll.innerHTML = `<div style="text-align: center; padding: 30px; font-size: 12px; color: var(--text-dim);">No channels found</div>`;
+                return;
+            }
+
+            filtered.forEach((c, idx) => {
+                const originalIndex = channels.indexOf(c);
+                const isSelected = (originalIndex === selectedChannelIndex);
+                const isFav = favorites.includes(c.title);
+
+                const row = document.createElement('div');
+                row.className = `channel-row ${isSelected ? 'selected' : ''}`;
+                row.tabIndex = 0;
+                row.innerHTML = `
+                    <div class="ch-num">${c.num || idx + 1}</div>
+                    <div class="ch-logo">${c.icon || '📺'}</div>
+                    <div class="ch-info">
+                        <div class="ch-name">${c.title}</div>
+                        <div class="ch-now">${c.epg || c.group}</div>
+                    </div>
+                    <div class="star-fav ${isFav ? 'active' : ''}" onclick="toggleFav(event, '${c.title}')">★</div>
+                `;
+
+                row.onclick = () => {
+                    selectedChannelIndex = originalIndex;
+                    renderChannelsList();
+                    updatePreviewPane();
+                };
+                row.ondblclick = () => {
+                    launchFullscreenPlayer();
+                };
+
+                scroll.appendChild(row);
+            });
+        }
+
+        function updatePreviewPane() {
+            const ch = channels[selectedChannelIndex] || channels[0];
+            if (!ch) return;
+
+            document.getElementById('previewChName').innerText = `${ch.num || (selectedChannelIndex + 1)}. ${ch.title}`;
+            document.getElementById('previewProgTitle').innerText = ch.epg || "Live Broadcast";
+            document.getElementById('previewBackdrop').innerText = ch.icon || '📺';
+
+            const isFav = favorites.includes(ch.title);
+            const favBtn = document.getElementById('btnPreviewFav');
+            favBtn.innerText = isFav ? '★ Favorited' : '☆ Favorite';
+            favBtn.style.color = isFav ? 'var(--gold)' : 'var(--text-main)';
+
+            // Random progress bar & times
+            const now = new Date();
+            const startMins = (now.getMinutes() - 18 + 60) % 60;
+            const endMins = (startMins + 45) % 60;
+            document.getElementById('previewProgStart').innerText = `${String(now.getHours()).padStart(2, '0')}:${String(startMins).padStart(2, '0')}`;
+            document.getElementById('previewProgEnd').innerText = `${String((now.getHours() + 1) % 24).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+            document.getElementById('previewProgFill').style.width = '48%';
+
+            // Upcoming list
+            const upList = document.getElementById('epgUpcomingList');
+            upList.innerHTML = `
+                <div class="epg-item">
+                    <span class="epg-item-time">NEXT</span>
+                    <span class="epg-item-name">Prime Time Analysis &amp; Feature</span>
+                </div>
+                <div class="epg-item">
+                    <span class="epg-item-time">+1 HOUR</span>
+                    <span class="epg-item-name">Special Documentary Edition</span>
+                </div>
+                <div class="epg-item">
+                    <span class="epg-item-time">+2 HOURS</span>
+                    <span class="epg-item-name">Nightline Live &amp; Worldwide News</span>
+                </div>
+            `;
+        }
+
+        function onLiveSearch(val) {
+            searchQuery = val.trim();
+            renderChannelsList();
+        }
+
+        function toggleFav(e, title) {
+            e.stopPropagation();
+            if (favorites.includes(title)) {
+                favorites = favorites.filter(t => t !== title);
+            } else {
+                favorites.push(title);
+            }
+            localStorage.setItem('one_favorites', JSON.stringify(favorites));
+            renderCategories();
+            renderChannelsList();
+            updatePreviewPane();
+        }
+
+        function toggleCurrentPreviewFav() {
+            const ch = channels[selectedChannelIndex];
+            if (ch) toggleFav({ stopPropagation: () => {} }, ch.title);
+        }
+
+        // Fullscreen Native Playback with Playlist Context
+        function launchFullscreenPlayer() {
+            const ch = channels[selectedChannelIndex];
+            if (!ch) return;
+
+            // Save to recents
+            if (!recentWatched.includes(selectedChannelIndex)) {
+                recentWatched.unshift(selectedChannelIndex);
+                if (recentWatched.length > 8) recentWatched.pop();
+                localStorage.setItem('one_recents', JSON.stringify(recentWatched));
+                renderRecentBar();
+            }
+
+            showToast(`Opening ${ch.title}...`);
+            const channelsPayload = JSON.stringify(channels.map((c, i) => ({
+                title: c.title,
+                url: c.url,
+                group: c.group,
+                logo: c.logo || "",
+                num: c.num || (i + 1)
+            })));
+
+            if (window.OneNative && window.OneNative.playWithPlaylist) {
+                window.OneNative.playWithPlaylist(
+                    ch.url,
+                    ch.title,
+                    `${ch.num || (selectedChannelIndex + 1)}. ${ch.group}`,
+                    channelsPayload,
+                    selectedChannelIndex
+                );
+            } else if (window.OneNative && window.OneNative.play) {
+                window.OneNative.play(ch.url, ch.title, ch.group);
+            }
+        }
+
+        function playCurrentChannel(idx) {
+            selectedChannelIndex = idx;
+            launchFullscreenPlayer();
+        }
+
+        function renderRecentBar() {
+            const bar = document.getElementById('recentChannelsBar');
+            bar.innerHTML = '';
+            recentWatched.forEach(idx => {
+                const ch = channels[idx];
+                if (!ch) return;
+                const card = document.createElement('div');
+                card.className = 'recent-card';
+                card.innerHTML = `
+                    <div style="font-size: 20px;">${ch.icon || '📺'}</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${ch.title}</div>
+                        <div style="font-size: 10px; color: var(--gold);">${ch.group}</div>
+                    </div>
+                `;
+                card.onclick = () => playCurrentChannel(idx);
+                bar.appendChild(card);
+            });
+        }
+
+        // EPG Timeline Rendering
+        function renderEpgGrid() {
+            const grid = document.getElementById('epgGridRows');
+            grid.innerHTML = '';
+            channels.slice(0, 10).forEach(ch => {
+                const row = document.createElement('div');
+                row.className = 'epg-row';
+                row.innerHTML = `
+                    <div class="epg-ch-col">
+                        <span>${ch.icon || '📺'}</span>
+                        <span style="font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${ch.title}</span>
+                    </div>
+                    <div class="epg-programs-row">
+                        <div class="epg-prog-block" style="width: 200px;">
+                            <div class="epg-prog-title">Early Morning Report</div>
+                            <div class="epg-prog-time">07:30 - 08:30</div>
+                        </div>
+                        <div class="epg-prog-block now" style="width: 280px;" onclick="playCurrentChannel(${channels.indexOf(ch)})">
+                            <div class="epg-prog-title">▶ ${ch.epg || 'Live Broadcast'}</div>
+                            <div class="epg-prog-time">08:30 - 10:15 (NOW AIRING)</div>
+                        </div>
+                        <div class="epg-prog-block" style="width: 240px;">
+                            <div class="epg-prog-title">Special Global Bulletin</div>
+                            <div class="epg-prog-time">10:15 - 11:30</div>
+                        </div>
+                        <div class="epg-prog-block" style="width: 220px;">
+                            <div class="epg-prog-title">Midday Highlights</div>
+                            <div class="epg-prog-time">11:30 - 12:45</div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(row);
+            });
+        }
+
+        // Movies & Series Rendering
+        function renderMovies(filtered) {
+            const grid = document.getElementById('moviesGrid');
+            grid.innerHTML = '';
+            const list = filtered || movies;
+            list.forEach(m => {
+                const card = document.createElement('div');
+                card.className = 'media-card';
+                card.tabIndex = 0;
+                card.innerHTML = `
+                    <div class="media-poster">
+                        <span>${m.icon}</span>
+                        <div class="media-badge-quality">${m.quality}</div>
+                    </div>
+                    <div class="media-info">
+                        <div class="media-name">${m.name}</div>
+                        <div class="media-sub">
+                            <span>${m.year} · ${m.genre}</span>
+                            <span style="color: var(--gold);">★ ${m.rating}</span>
+                        </div>
+                    </div>
+                `;
+                card.onclick = () => openMovieDetail(m);
+                grid.appendChild(card);
+            });
+        }
+
+        function filterMovieGenre(g) {
+            document.querySelectorAll('#movieFilterBar .filter-chip').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+            if (g === 'all') {
+                renderMovies(movies);
+            } else {
+                renderMovies(movies.filter(m => m.genre === g));
+            }
+        }
+
+        function openMovieDetail(m) {
+            document.getElementById('modalMovieTitle').innerText = m.name;
+            document.getElementById('modalMoviePoster').innerText = m.icon;
+            document.getElementById('modalMovieMeta').innerText = `${m.year} · ${m.duration} · ${m.genre} · ${m.quality}`;
+            document.getElementById('modalMovieRating').innerText = `⭐ ${m.rating} / 10 · IMDb Score`;
+            document.getElementById('modalMovieSynopsis').innerText = m.synopsis || "High-definition feature film ready for hardware-accelerated playback.";
+            document.getElementById('btnMovieWatch').onclick = () => {
+                closeModal('modalMovie');
+                if (window.OneNative && window.OneNative.play) {
+                    window.OneNative.play(m.url, m.name, `Movie · ${m.genre} (${m.year})`);
+                }
+            };
+            openModal('modalMovie');
+        }
+
+        function renderSeries() {
+            const grid = document.getElementById('seriesGrid');
+            grid.innerHTML = '';
+            series.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'media-card';
+                card.tabIndex = 0;
+                card.innerHTML = `
+                    <div class="media-poster">
+                        <span>${s.icon}</span>
+                        <div class="media-badge-quality">HD</div>
+                    </div>
+                    <div class="media-info">
+                        <div class="media-name">${s.name}</div>
+                        <div class="media-sub">
+                            <span>${s.seasons} Seasons</span>
+                            <span style="color: var(--gold);">★ ${s.rating}</span>
+                        </div>
+                    </div>
+                `;
+                card.onclick = () => {
+                    showToast(`Playing ${s.name} Episode 1...`);
+                    if (window.OneNative && window.OneNative.play) {
+                        window.OneNative.play(s.url, s.name, `${s.genre} · Season 1 Episode 1`);
+                    }
+                };
+                grid.appendChild(card);
+            });
+        }
+
+        // Playlists & Xtream API
+        function renderPlaylists() {
+            const container = document.getElementById('playlistsContainer');
+            container.innerHTML = '';
+            playlists.forEach((p, idx) => {
+                const item = document.createElement('div');
+                item.style.background = '#090e1a';
+                item.style.border = '1px solid var(--border)';
+                item.style.borderRadius = '8px';
+                item.style.padding = '12px 16px';
+                item.style.display = 'flex';
+                item.style.justifyContent = 'space-between';
+                item.style.alignItems = 'center';
+                item.innerHTML = `
+                    <div>
+                        <div style="font-weight: 700; font-size: 14px;">${p.name}</div>
+                        <div style="font-size: 11px; color: var(--text-dim); margin-top: 2px;">
+                            ${p.type} · ${p.count || channels.length} items
+                        </div>
+                    </div>
+                    <button class="btn-secondary" style="padding: 5px 12px; font-size: 11px;" onclick="showToast('Active: ${p.name}')">Active</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function submitM3u() {
+            const name = document.getElementById('m3uName').value.trim() || "Imported M3U";
+            const url = document.getElementById('m3uUrl').value.trim();
+            if (!url) {
+                showToast("Please enter an M3U URL");
+                return;
+            }
+            closeModal('modalM3u');
+            showToast("Parsing M3U playlist streams...");
+            if (window.OneNative && window.OneNative.fetchPlaylist) {
+                window.OneNative.fetchPlaylist(url, name);
+            }
+        }
+
+        function submitXtream() {
+            const server = document.getElementById('xtreamServer').value.trim();
+            const user = document.getElementById('xtreamUser').value.trim();
+            const pass = document.getElementById('xtreamPass').value.trim();
+            if (!server || !user || !pass) {
+                showToast("All fields are required");
+                return;
+            }
+            closeModal('modalXtream');
+            showToast("Connecting to Xtream server...");
+            if (window.OneNative && window.OneNative.fetchXtream) {
+                window.OneNative.fetchXtream(server, user, pass, `Xtream (${user})`);
+            }
+        }
+
+        function syncCloudPlaylists() {
+            showToast("Connecting to oneapk.ro cloud...");
+            if (window.OneNative && window.OneNative.syncCloudPlaylists) {
+                window.OneNative.syncCloudPlaylists(deviceMac);
+            }
+        }
+
+        function resetDefaultChannels() {
+            channels = [...initialChannels];
+            renderCategories();
+            renderChannelsList();
+            updatePreviewPane();
+            showToast("Reset to default channels");
+        }
+
+        // Bridge Callbacks
+        window.onPlaylistLoaded = function(success, dataOrMsg) {
+            if (success) {
+                try {
+                    const res = JSON.parse(dataOrMsg);
+                    playlists.push({
+                        name: res.name,
+                        count: res.count,
+                        type: res.kind === 'xtream' ? 'Xtream Codes' : 'M3U'
+                    });
+                    if (Array.isArray(res.items) && res.items.length > 0) {
+                        channels = res.items.map((item, i) => ({
+                            num: i + 1,
+                            title: item.title,
+                            group: item.group || "Channels",
+                            url: item.url,
+                            icon: "📺",
+                            logo: item.logo || ""
+                        }));
+                        renderCategories();
+                        renderChannelsList();
+                        updatePreviewPane();
+                        renderEpgGrid();
+                    }
+                    renderPlaylists();
+                    if (window.OneNative && window.OneNative.savePlaylists) {
+                        window.OneNative.savePlaylists(JSON.stringify(playlists));
+                    }
+                    showToast(`Loaded ${res.count} channels!`);
+                } catch (e) {
+                    showToast("Loaded playlist");
+                }
+            } else {
+                showToast("Failed: " + dataOrMsg);
+            }
+        };
+
+        window.onCloudPlaylistsLoaded = function(success, dataOrMsg) {
+            if (success) {
+                showToast("Cloud playlists synced from oneapk.ro");
+            } else {
+                showToast("Cloud sync: " + dataOrMsg);
+            }
+        };
+
+        function checkLicense() {
+            showToast("Verifying license with oneapk.ro...");
+            if (window.OneNative && window.OneNative.checkLicense) {
+                window.OneNative.checkLicense(deviceMac, deviceKey);
+            } else {
+                showToast("License Active · 31 Days Left");
+            }
+        }
+
+        window.onLicenseResult = function(success, message) {
+            const detail = document.getElementById('licenseDetailText');
+            const pill = document.getElementById('licensePill');
+            const text = document.getElementById('licenseText');
+            if (success) {
+                detail.innerText = "Activated: " + message;
+                detail.style.color = "var(--green)";
+                pill.className = "license-pill";
+                text.innerText = "Activated";
+                showToast("License Active!");
+            } else {
+                detail.innerText = message || "Waiting for activation";
+                detail.style.color = "var(--gold)";
+                showToast(message || "Waiting for activation");
+            }
+        };
+
+        function toggleAutoPoll() {
+            isPolling = !isPolling;
+            const btn = document.getElementById('btnAutoPoll');
+            if (isPolling) {
+                btn.innerText = "Auto-Poll (ON)";
+                btn.style.borderColor = "var(--gold)";
+                pollTimer = setInterval(() => {
+                    if (window.OneNative && window.OneNative.pollLicense) {
+                        window.OneNative.pollLicense(deviceMac, deviceKey);
+                    }
+                }, 10000);
+                showToast("Auto-polling oneapk.ro every 10s");
+            } else {
+                btn.innerText = "Auto-Poll (Off)";
+                btn.style.borderColor = "var(--border)";
+                clearInterval(pollTimer);
+                showToast("Auto-polling stopped");
+            }
+        }
+
+        window.onLicensePoll = function(success, message) {
+            if (success) {
+                window.onLicenseResult(true, message);
+                toggleAutoPoll();
+            }
+        };
+
+        // Settings & Modals
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function saveSettings() {
+            showToast("Preferences saved");
+        }
+
+        function clearStreamCache() {
+            showToast("Stream buffers and thumbnails cleared");
+        }
+
+        function setParentalPin() {
+            const pin = prompt("Set 4-Digit Parental Control PIN (0000 to disable):", "0000");
+            if (pin) showToast("Parental PIN configured");
+        }
+
+        function switchProfile() {
+            const profiles = ["Main", "Family", "Kids", "Sports"];
+            const current = document.getElementById('currentProfileName').innerText;
+            const nextIdx = (profiles.indexOf(current) + 1) % profiles.length;
+            const next = profiles[nextIdx];
+            document.getElementById('currentProfileName').innerText = next;
+            document.getElementById('avatarLetter').innerText = next[0];
+            showToast("Switched to Profile: " + next);
+        }
+
+        function openGlobalSearch() {
+            switchView('live');
+            document.getElementById('liveSearchInput').focus();
+        }
+
+        // TV Remote Navigation
+        window.onTvKeyDown = function(keyCode) {
+            // Keycode 19: UP, 20: DOWN, 21: LEFT, 22: RIGHT, 23: CENTER, 66: ENTER, 4: BACK
+            if (keyCode === 23 || keyCode === 66) {
+                const focused = document.activeElement;
+                if (focused && typeof focused.click === 'function') focused.click();
+            }
+        };
+
+        window.onBackPressed = function() {
+            const activePanel = document.querySelector('.view-panel.active');
+            if (activePanel && activePanel.id !== 'view-home') {
+                switchView('home');
+                return true;
+            }
+            return false;
+        };
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2400);
+        }
+    </script>
+</body>
+</html>

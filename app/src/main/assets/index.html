@@ -482,16 +482,49 @@
 
         /* Categories column */
         .categories-pane {
-            width: 170px;
+            width: 185px;
             background: var(--bg-surface);
             border: 1px solid var(--border);
             border-radius: 10px;
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
+            overflow: hidden;
             padding: 8px;
-            gap: 4px;
+            gap: 6px;
             flex-shrink: 0;
+        }
+
+        .category-toggle-header {
+            display: flex;
+            background: #080d19;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 2px;
+            flex-shrink: 0;
+        }
+
+        .cat-mode-toggle {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+        }
+
+        .cat-mode-toggle:hover {
+            color: var(--text-main);
+        }
+
+        .cat-mode-toggle.active {
+            background: var(--gold);
+            color: #060913;
+            box-shadow: 0 2px 6px var(--gold-glow);
         }
 
         .cat-btn {
@@ -527,6 +560,110 @@
             font-family: monospace;
         }
 
+        .btn-add-custom-cat {
+            background: rgba(255, 180, 0, 0.08);
+            border: 1px dashed var(--gold);
+            color: var(--gold);
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        .btn-add-custom-cat:hover {
+            background: rgba(255, 180, 0, 0.18);
+        }
+
+        .custom-tag-badge {
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 3px;
+            background: rgba(255, 180, 0, 0.15);
+            color: var(--gold);
+            border: 1px solid rgba(255, 180, 0, 0.3);
+            margin-right: 4px;
+        }
+
+        .cat-assign-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 240px;
+            overflow-y: auto;
+            margin: 12px 0;
+        }
+
+        .cat-assign-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .cat-assign-item:hover {
+            border-color: var(--gold);
+            background: var(--bg-card-hover);
+        }
+
+        .cat-assign-item.checked {
+            border-color: var(--gold);
+            background: rgba(255, 180, 0, 0.12);
+        }
+
+        .cat-manage-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 260px;
+            overflow-y: auto;
+            margin: 12px 0;
+        }
+
+        .cat-manage-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .emoji-picker-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .emoji-pill {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-main);
+            transition: all 0.15s;
+            user-select: none;
+        }
+
+        .emoji-pill:hover, .emoji-pill.active {
+            border-color: var(--gold);
+            background: rgba(255, 180, 0, 0.15);
+        }
+
         /* Channel List column */
         .channels-pane {
             width: 320px;
@@ -555,6 +692,67 @@
             color: #FFFFFF;
             font-size: 12px;
             width: 100%;
+        }
+
+        .pane-sort-bar {
+            padding: 6px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: #090e1b;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sort-label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-dim);
+            white-space: nowrap;
+        }
+
+        .channel-sort-select {
+            flex: 1;
+            background: var(--bg-card);
+            color: var(--gold);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .channel-sort-select:hover, .channel-sort-select:focus {
+            border-color: var(--gold);
+            background: var(--bg-card-hover);
+        }
+
+        .channel-sort-select option {
+            background: #0d1527;
+            color: #FFFFFF;
+            padding: 6px;
+            font-weight: 600;
+        }
+
+        .watch-frequency-badge {
+            font-size: 9px;
+            font-weight: 700;
+            color: #ff9100;
+            background: rgba(255, 145, 0, 0.15);
+            border: 1px solid rgba(255, 145, 0, 0.3);
+            border-radius: 4px;
+            padding: 1px 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            margin-left: 2px;
+            white-space: nowrap;
         }
 
         .channels-list-scroll {
@@ -1425,8 +1623,19 @@
             <section id="view-live" class="view-panel" style="padding: 10px;">
                 <div class="live-tv-container">
                     <!-- Column 1: Categories -->
-                    <div class="categories-pane" id="liveCategoriesPane">
-                        <!-- Category buttons -->
+                    <div class="categories-pane">
+                        <!-- Category Mode Toggle: Standard vs Custom Groups -->
+                        <div class="category-toggle-header">
+                            <button class="cat-mode-toggle active" id="btnToggleStandard" onclick="toggleCategoryMode('standard')">Standard</button>
+                            <button class="cat-mode-toggle" id="btnToggleCustom" onclick="toggleCategoryMode('custom')">🏷️ Custom</button>
+                        </div>
+                        <div id="liveCategoriesList" style="display: flex; flex-direction: column; gap: 4px; flex: 1; overflow-y: auto;">
+                            <!-- Category buttons -->
+                        </div>
+                        <div id="customGroupActions" style="display: none; flex-direction: column; gap: 4px; margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border);">
+                            <button class="btn-add-custom-cat" onclick="openCreateCategoryModal()">+ New Group</button>
+                            <button class="btn-secondary" style="padding: 6px; font-size: 11px;" onclick="openManageCategoriesModal()">⚙ Manage Groups</button>
+                        </div>
                     </div>
 
                     <!-- Column 2: Channels -->
@@ -1434,6 +1643,17 @@
                         <div class="pane-search">
                             <span>🔍</span>
                             <input type="text" id="liveSearchInput" placeholder="Filter channels..." oninput="onLiveSearch(this.value)">
+                        </div>
+                        <div class="pane-sort-bar">
+                            <label for="channelSortSelect" class="sort-label">
+                                <span>⇅</span>
+                                <span>Sort:</span>
+                            </label>
+                            <select id="channelSortSelect" class="channel-sort-select" onchange="onSortChange(this.value)" aria-label="Sort channels">
+                                <option value="number"># Channel Number</option>
+                                <option value="name">🔤 Alphabetical (A-Z)</option>
+                                <option value="frequency">🔥 Recent Watch Frequency</option>
+                            </select>
                         </div>
                         <div class="channels-list-scroll" id="channelsListScroll">
                             <!-- Channel items -->
@@ -1468,7 +1688,11 @@
                                 <span>▶</span>
                                 <span>WATCH FULLSCREEN</span>
                             </button>
-                            <button class="btn-fav-toggle" id="btnPreviewFav" onclick="toggleCurrentPreviewFav()">★</button>
+                            <button class="btn-fav-toggle" id="btnPreviewFav" onclick="toggleCurrentPreviewFav()" title="Toggle Favorite">★</button>
+                            <button class="btn-fav-toggle" id="btnPreviewGroup" onclick="openAssignCategoryModal()" title="Assign to Custom Category" style="font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 4px; padding: 0 10px;">
+                                <span>🏷️</span>
+                                <span style="font-size: 11px;">Group</span>
+                            </button>
                         </div>
 
                         <div class="epg-schedule-box">
@@ -1717,6 +1941,78 @@
         </div>
     </div>
 
+    <!-- Modal: Assign Custom Categories -->
+    <div class="modal-overlay" id="modalAssignCategory">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>🏷️ Group Channel</h3>
+                <button class="modal-close" onclick="closeModal('modalAssignCategory')">✕</button>
+            </div>
+            <p style="font-size: 13px; color: var(--text-dim); margin-bottom: 12px;">
+                Assign <strong id="assignChannelName" style="color: var(--gold);">Channel</strong> to custom groups:
+            </p>
+            <div id="assignCategoriesList" class="cat-assign-list">
+                <!-- Dynamically populated category checkboxes -->
+            </div>
+            <div class="actions-row" style="margin-top: 14px;">
+                <button class="btn-secondary" style="flex: 1;" onclick="openCreateCategoryModal(true)">+ New Group</button>
+                <button class="btn-primary" style="flex: 1;" onclick="closeModal('modalAssignCategory')">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Manage Custom Categories -->
+    <div class="modal-overlay" id="modalManageCategories">
+        <div class="modal-card" style="max-width: 520px;">
+            <div class="modal-header">
+                <h3>⚙ Manage Custom Groups</h3>
+                <button class="modal-close" onclick="closeModal('modalManageCategories')">✕</button>
+            </div>
+            <p style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px;">
+                Organize your channels into custom categories, view member counts, or delete groups.
+            </p>
+            <div id="manageCategoriesList" class="cat-manage-list">
+                <!-- Dynamically populated management rows -->
+            </div>
+            <div class="actions-row" style="margin-top: 14px;">
+                <button class="btn-primary" style="flex: 1;" onclick="openCreateCategoryModal(false)">+ Create New Group</button>
+                <button class="btn-secondary" onclick="closeModal('modalManageCategories')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Create Custom Category -->
+    <div class="modal-overlay" id="modalCreateCategory">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>+ New Custom Group</h3>
+                <button class="modal-close" onclick="closeModal('modalCreateCategory')">✕</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Group Name</label>
+                <input type="text" class="form-input" id="newCatName" placeholder="e.g. Matchday Sports, Late Night Chill">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Icon / Emoji</label>
+                <input type="text" class="form-input" id="newCatIcon" placeholder="⭐" value="⭐" style="font-size: 18px; width: 80px;">
+                <div class="emoji-picker-row">
+                    <span class="emoji-pill" onclick="selectEmoji('⚽')">⚽ Sports</span>
+                    <span class="emoji-pill" onclick="selectEmoji('📰')">📰 News</span>
+                    <span class="emoji-pill" onclick="selectEmoji('🍿')">🍿 Cinema</span>
+                    <span class="emoji-pill" onclick="selectEmoji('🎶')">🎶 Music</span>
+                    <span class="emoji-pill" onclick="selectEmoji('🔭')">🔭 Science</span>
+                    <span class="emoji-pill" onclick="selectEmoji('🎮')">🎮 Gaming</span>
+                    <span class="emoji-pill" onclick="selectEmoji('👶')">👶 Kids</span>
+                    <span class="emoji-pill" onclick="selectEmoji('🔥')">🔥 Trending</span>
+                </div>
+            </div>
+            <div class="actions-row">
+                <button class="btn-primary" onclick="saveNewCategory()">Save Group</button>
+                <button class="btn-secondary" onclick="closeModal('modalCreateCategory')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="toast">Action completed</div>
 
@@ -1940,9 +2236,39 @@
             { name: "Default Curated HD", count: 10, type: "M3U" }
         ];
 
+        // Custom Categories State & Persistence
+        const defaultCustomCategories = [
+            { id: "cat_sports", name: "Matchday Sports", icon: "⚽", channelTitles: ["Red Bull TV HD"] },
+            { id: "cat_news", name: "Global News", icon: "📰", channelTitles: ["ONE News 24/7", "Euronews English"] },
+            { id: "cat_discovery", name: "Science & Cosmos", icon: "🔭", channelTitles: ["NASA TV HD"] }
+        ];
+        let customCategories = JSON.parse(localStorage.getItem('one_custom_categories') || 'null');
+        if (!customCategories || !Array.isArray(customCategories) || customCategories.length === 0) {
+            customCategories = defaultCustomCategories;
+            localStorage.setItem('one_custom_categories', JSON.stringify(customCategories));
+        }
+        let categoryMode = 'standard'; // 'standard' | 'custom'
+        let activeCustomCategoryId = 'all'; // 'all' | cat.id
+        let returnToAssignModalOnCreate = false;
+
+        // Channel Sorting & Watch Frequency State
+        let channelSortMode = localStorage.getItem('one_channel_sort') || 'number'; // 'number' | 'name' | 'frequency'
+        let channelWatchCounts = JSON.parse(localStorage.getItem('one_watch_frequency') || 'null');
+        if (!channelWatchCounts || typeof channelWatchCounts !== 'object') {
+            channelWatchCounts = {
+                "ONE News 24/7": 32,
+                "NASA TV HD": 26,
+                "Red Bull TV HD": 19,
+                "Euronews English": 14,
+                "Sky News UK": 10
+            };
+            localStorage.setItem('one_watch_frequency', JSON.stringify(channelWatchCounts));
+        }
+
         // Initialize on DOM Ready
         window.addEventListener('DOMContentLoaded', () => {
             initDevice();
+            initSorting();
             renderCategories();
             renderChannelsList();
             updatePreviewPane();
@@ -1953,6 +2279,13 @@
             renderPlaylists();
             startClock();
         });
+
+        function initSorting() {
+            const select = document.getElementById('channelSortSelect');
+            if (select) {
+                select.value = channelSortMode;
+            }
+        }
 
         function initDevice() {
             if (window.OneNative && window.OneNative.getDeviceId) {
@@ -2024,30 +2357,80 @@
             return Array.from(set);
         }
 
+        function toggleCategoryMode(mode) {
+            categoryMode = mode;
+            const btnStd = document.getElementById('btnToggleStandard');
+            const btnCust = document.getElementById('btnToggleCustom');
+            const actions = document.getElementById('customGroupActions');
+
+            if (mode === 'standard') {
+                if (btnStd) btnStd.classList.add('active');
+                if (btnCust) btnCust.classList.remove('active');
+                if (actions) actions.style.display = 'none';
+            } else {
+                if (btnCust) btnCust.classList.add('active');
+                if (btnStd) btnStd.classList.remove('active');
+                if (actions) actions.style.display = 'flex';
+            }
+
+            renderCategories();
+            renderChannelsList();
+            showToast(mode === 'custom' ? "Custom Groups Filter Active" : "Standard Categories Filter Active");
+        }
+
         function renderCategories() {
-            const pane = document.getElementById('liveCategoriesPane');
+            const pane = document.getElementById('liveCategoriesList') || document.getElementById('liveCategoriesPane');
+            if (!pane) return;
             pane.innerHTML = '';
 
-            const allBtn = document.createElement('button');
-            allBtn.className = `cat-btn ${activeCategory === 'all' ? 'active' : ''}`;
-            allBtn.innerHTML = `<span>All Channels</span> <span class="count">${channels.length}</span>`;
-            allBtn.onclick = () => selectCategory('all');
-            pane.appendChild(allBtn);
+            if (categoryMode === 'standard') {
+                const allBtn = document.createElement('button');
+                allBtn.className = `cat-btn ${activeCategory === 'all' ? 'active' : ''}`;
+                allBtn.innerHTML = `<span>All Channels</span> <span class="count">${channels.length}</span>`;
+                allBtn.onclick = () => selectCategory('all');
+                pane.appendChild(allBtn);
 
-            const favBtn = document.createElement('button');
-            favBtn.className = `cat-btn ${activeCategory === 'favorites' ? 'active' : ''}`;
-            favBtn.innerHTML = `<span>⭐ Favorites</span> <span class="count">${favorites.length}</span>`;
-            favBtn.onclick = () => selectCategory('favorites');
-            pane.appendChild(favBtn);
+                const favBtn = document.createElement('button');
+                favBtn.className = `cat-btn ${activeCategory === 'favorites' ? 'active' : ''}`;
+                favBtn.innerHTML = `<span>⭐ Favorites</span> <span class="count">${favorites.length}</span>`;
+                favBtn.onclick = () => selectCategory('favorites');
+                pane.appendChild(favBtn);
 
-            getCategories().forEach(cat => {
-                const cnt = channels.filter(c => c.group === cat).length;
-                const b = document.createElement('button');
-                b.className = `cat-btn ${activeCategory === cat ? 'active' : ''}`;
-                b.innerHTML = `<span>${cat}</span> <span class="count">${cnt}</span>`;
-                b.onclick = () => selectCategory(cat);
-                pane.appendChild(b);
-            });
+                getCategories().forEach(cat => {
+                    const cnt = channels.filter(c => c.group === cat).length;
+                    const b = document.createElement('button');
+                    b.className = `cat-btn ${activeCategory === cat ? 'active' : ''}`;
+                    b.innerHTML = `<span>${cat}</span> <span class="count">${cnt}</span>`;
+                    b.onclick = () => selectCategory(cat);
+                    pane.appendChild(b);
+                });
+            } else {
+                // Custom Categories Mode
+                const allCustomTitles = new Set();
+                customCategories.forEach(cat => (cat.channelTitles || []).forEach(t => allCustomTitles.add(t)));
+
+                const allBtn = document.createElement('button');
+                allBtn.className = `cat-btn ${activeCustomCategoryId === 'all' ? 'active' : ''}`;
+                allBtn.innerHTML = `<span>🏷️ All Custom</span> <span class="count">${allCustomTitles.size}</span>`;
+                allBtn.onclick = () => selectCustomCategory('all');
+                pane.appendChild(allBtn);
+
+                if (customCategories.length === 0) {
+                    const empty = document.createElement('div');
+                    empty.style.cssText = 'padding: 16px 8px; text-align: center; font-size: 11px; color: var(--text-dim); line-height: 1.5;';
+                    empty.innerHTML = 'No custom groups yet.<br><span style="color: var(--gold); cursor: pointer;" onclick="openCreateCategoryModal(false)">+ Create your first group</span>';
+                    pane.appendChild(empty);
+                } else {
+                    customCategories.forEach(cat => {
+                        const cnt = (cat.channelTitles || []).length;
+                        const b = document.createElement('button');
+                        b.className = `cat-btn ${activeCustomCategoryId === cat.id ? 'active' : ''}`;
+                        b.innerHTML = `<span>${cat.icon || '🏷️'} ${cat.name}</span> <span class="count">${cnt}</span>`;
+                        b.onclick = () => selectCustomCategory(cat.id);
+                        pane.appendChild(b);
+                    });
+                }
+            }
         }
 
         function selectCategory(cat) {
@@ -2056,19 +2439,66 @@
             renderChannelsList();
         }
 
+        function selectCustomCategory(catId) {
+            activeCustomCategoryId = catId;
+            renderCategories();
+            renderChannelsList();
+        }
+
+        function onSortChange(val) {
+            channelSortMode = val;
+            localStorage.setItem('one_channel_sort', val);
+            renderChannelsList();
+            const labelMap = {
+                number: "Channel Number",
+                name: "Alphabetical Order (A-Z)",
+                frequency: "Recent Watch Frequency"
+            };
+            showToast(`Sorted by: ${labelMap[val] || val}`);
+        }
+
         function renderChannelsList() {
             const scroll = document.getElementById('channelsListScroll');
+            if (!scroll) return;
             scroll.innerHTML = '';
 
-            const filtered = channels.filter((c, idx) => {
-                const matchCat = (activeCategory === 'all') ||
-                    (activeCategory === 'favorites' ? favorites.includes(c.title) : c.group === activeCategory);
+            const filtered = channels.filter((c) => {
+                let matchCat = false;
+                if (categoryMode === 'standard') {
+                    matchCat = (activeCategory === 'all') ||
+                        (activeCategory === 'favorites' ? favorites.includes(c.title) : c.group === activeCategory);
+                } else {
+                    if (activeCustomCategoryId === 'all') {
+                        matchCat = customCategories.some(cat => (cat.channelTitles || []).includes(c.title));
+                    } else {
+                        const selCat = customCategories.find(cat => cat.id === activeCustomCategoryId);
+                        matchCat = selCat ? (selCat.channelTitles || []).includes(c.title) : false;
+                    }
+                }
                 const matchSearch = !searchQuery || c.title.toLowerCase().includes(searchQuery.toLowerCase());
                 return matchCat && matchSearch;
             });
 
+            // Apply selected sorting criteria
+            if (channelSortMode === 'name') {
+                filtered.sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base', numeric: true }));
+            } else if (channelSortMode === 'frequency') {
+                filtered.sort((a, b) => {
+                    const countA = channelWatchCounts[a.title] || 0;
+                    const countB = channelWatchCounts[b.title] || 0;
+                    if (countB !== countA) return countB - countA;
+                    return (a.num || 0) - (b.num || 0);
+                });
+            } else {
+                // Default: channel number
+                filtered.sort((a, b) => (a.num || 0) - (b.num || 0));
+            }
+
             if (filtered.length === 0) {
-                scroll.innerHTML = `<div style="text-align: center; padding: 30px; font-size: 12px; color: var(--text-dim);">No channels found</div>`;
+                const msg = categoryMode === 'custom'
+                    ? `No channels in this custom category.<br><span style="color: var(--gold); cursor: pointer; text-decoration: underline;" onclick="openAssignCategoryModal()">Click 🏷️ Group in the preview panel to add channels!</span>`
+                    : `No channels found`;
+                scroll.innerHTML = `<div style="text-align: center; padding: 30px; font-size: 12px; color: var(--text-dim); line-height: 1.6;">${msg}</div>`;
                 return;
             }
 
@@ -2076,6 +2506,14 @@
                 const originalIndex = channels.indexOf(c);
                 const isSelected = (originalIndex === selectedChannelIndex);
                 const isFav = favorites.includes(c.title);
+
+                const assignedCats = customCategories.filter(cat => (cat.channelTitles || []).includes(c.title));
+                const badgesHtml = assignedCats.map(cat => `<span class="custom-tag-badge" title="${cat.name}">${cat.icon || '🏷️'} ${cat.name}</span>`).join('');
+
+                const watchCount = channelWatchCounts[c.title] || 0;
+                const freqBadge = (channelSortMode === 'frequency' || watchCount > 0)
+                    ? `<span class="watch-frequency-badge" title="Watched ${watchCount} times">🔥 ${watchCount}</span>`
+                    : '';
 
                 const row = document.createElement('div');
                 row.className = `channel-row ${isSelected ? 'selected' : ''}`;
@@ -2085,8 +2523,13 @@
                     <div class="ch-logo">${c.icon || '📺'}</div>
                     <div class="ch-info">
                         <div class="ch-name">${c.title}</div>
-                        <div class="ch-now">${c.epg || c.group}</div>
+                        <div class="ch-now" style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+                            <span>${c.epg || c.group}</span>
+                            ${freqBadge}
+                            ${badgesHtml}
+                        </div>
                     </div>
+                    <div class="star-fav" title="Assign to Custom Category" style="font-size: 13px; margin-right: 4px;" onclick="openAssignCategoryForChannel(event, ${originalIndex})">🏷️</div>
                     <div class="star-fav ${isFav ? 'active' : ''}" onclick="toggleFav(event, '${c.title}')">★</div>
                 `;
 
@@ -2101,6 +2544,175 @@
 
                 scroll.appendChild(row);
             });
+        }
+
+        // Custom Categories Dialogs & Management
+        function openAssignCategoryForChannel(e, originalIndex) {
+            e.stopPropagation();
+            selectedChannelIndex = originalIndex;
+            updatePreviewPane();
+            openAssignCategoryModal();
+        }
+
+        function openAssignCategoryModal() {
+            const ch = channels[selectedChannelIndex];
+            if (!ch) {
+                showToast("Select a channel first");
+                return;
+            }
+            document.getElementById('assignChannelName').innerText = ch.title;
+            renderAssignCategoriesList();
+            openModal('modalAssignCategory');
+        }
+
+        function renderAssignCategoriesList() {
+            const ch = channels[selectedChannelIndex];
+            if (!ch) return;
+            const container = document.getElementById('assignCategoriesList');
+            container.innerHTML = '';
+
+            if (customCategories.length === 0) {
+                container.innerHTML = '<div style="padding: 16px; text-align: center; font-size: 12px; color: var(--text-dim);">No custom categories created yet. Click "+ New Group" below to create one!</div>';
+                return;
+            }
+
+            customCategories.forEach(cat => {
+                const isAssigned = (cat.channelTitles || []).includes(ch.title);
+                const item = document.createElement('div');
+                item.className = `cat-assign-item ${isAssigned ? 'checked' : ''}`;
+                item.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 18px;">${cat.icon || '🏷️'}</span>
+                        <div>
+                            <div style="font-weight: 700; font-size: 13px; color: var(--text-main);">${cat.name}</div>
+                            <div style="font-size: 11px; color: var(--text-dim);">${(cat.channelTitles || []).length} channels</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 18px; color: ${isAssigned ? 'var(--gold)' : 'var(--text-dim)'}; font-weight: 800;">${isAssigned ? '☑' : '☐'}</div>
+                `;
+                item.onclick = () => toggleChannelInCustomCategory(cat.id, ch.title);
+                container.appendChild(item);
+            });
+        }
+
+        function toggleChannelInCustomCategory(catId, channelTitle) {
+            const cat = customCategories.find(c => c.id === catId);
+            if (!cat) return;
+            if (!Array.isArray(cat.channelTitles)) cat.channelTitles = [];
+
+            if (cat.channelTitles.includes(channelTitle)) {
+                cat.channelTitles = cat.channelTitles.filter(t => t !== channelTitle);
+                showToast(`Removed from ${cat.name}`);
+            } else {
+                cat.channelTitles.push(channelTitle);
+                showToast(`Added to ${cat.name}`);
+            }
+            localStorage.setItem('one_custom_categories', JSON.stringify(customCategories));
+            renderAssignCategoriesList();
+            renderCategories();
+            renderChannelsList();
+        }
+
+        function openManageCategoriesModal() {
+            renderManageCategoriesList();
+            openModal('modalManageCategories');
+        }
+
+        function renderManageCategoriesList() {
+            const container = document.getElementById('manageCategoriesList');
+            container.innerHTML = '';
+
+            if (customCategories.length === 0) {
+                container.innerHTML = '<div style="padding: 24px; text-align: center; font-size: 12px; color: var(--text-dim);">No custom groups yet.</div>';
+                return;
+            }
+
+            customCategories.forEach(cat => {
+                const item = document.createElement('div');
+                item.className = 'cat-manage-item';
+                item.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 22px;">${cat.icon || '🏷️'}</span>
+                        <div>
+                            <div style="font-weight: 700; font-size: 13px; color: var(--text-main);">${cat.name}</div>
+                            <div style="font-size: 11px; color: var(--gold);">${(cat.channelTitles || []).length} channels assigned</div>
+                        </div>
+                    </div>
+                    <button class="btn-secondary" style="padding: 6px 12px; font-size: 11px; color: #ff5252; border-color: rgba(255, 82, 82, 0.4);" onclick="deleteCustomCategory('${cat.id}')">
+                        🗑️ Delete
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function deleteCustomCategory(catId) {
+            const cat = customCategories.find(c => c.id === catId);
+            if (!cat) return;
+            if (confirm(`Delete custom category "${cat.name}"? Channels will remain in your library.`)) {
+                customCategories = customCategories.filter(c => c.id !== catId);
+                localStorage.setItem('one_custom_categories', JSON.stringify(customCategories));
+                if (activeCustomCategoryId === catId) activeCustomCategoryId = 'all';
+                renderManageCategoriesList();
+                renderCategories();
+                renderChannelsList();
+                showToast(`Deleted category "${cat.name}"`);
+            }
+        }
+
+        function openCreateCategoryModal(fromAssignModal = false) {
+            returnToAssignModalOnCreate = fromAssignModal;
+            if (fromAssignModal) {
+                closeModal('modalAssignCategory');
+            } else {
+                closeModal('modalManageCategories');
+            }
+            document.getElementById('newCatName').value = '';
+            document.getElementById('newCatIcon').value = '⭐';
+            openModal('modalCreateCategory');
+        }
+
+        function selectEmoji(emoji) {
+            document.getElementById('newCatIcon').value = emoji;
+        }
+
+        function saveNewCategory() {
+            const name = document.getElementById('newCatName').value.trim();
+            const icon = document.getElementById('newCatIcon').value.trim() || '🏷️';
+            if (!name) {
+                showToast("Please enter a category name");
+                return;
+            }
+
+            const newId = 'cat_' + Date.now();
+            const newCat = {
+                id: newId,
+                name: name,
+                icon: icon,
+                channelTitles: []
+            };
+
+            // If created while grouping a channel, assign it right away
+            if (returnToAssignModalOnCreate) {
+                const ch = channels[selectedChannelIndex];
+                if (ch) {
+                    newCat.channelTitles.push(ch.title);
+                }
+            }
+
+            customCategories.push(newCat);
+            localStorage.setItem('one_custom_categories', JSON.stringify(customCategories));
+            closeModal('modalCreateCategory');
+
+            showToast(`Created group "${name}"`);
+            renderCategories();
+            renderChannelsList();
+
+            if (returnToAssignModalOnCreate) {
+                openAssignCategoryModal();
+            } else {
+                openManageCategoriesModal();
+            }
         }
 
         function updatePreviewPane() {
@@ -2177,6 +2789,10 @@
                 localStorage.setItem('one_recents', JSON.stringify(recentWatched));
                 renderRecentBar();
             }
+
+            // Increment watch frequency
+            channelWatchCounts[ch.title] = (channelWatchCounts[ch.title] || 0) + 1;
+            localStorage.setItem('one_watch_frequency', JSON.stringify(channelWatchCounts));
 
             showToast(`Opening ${ch.title}...`);
             const channelsPayload = JSON.stringify(channels.map((c, i) => ({

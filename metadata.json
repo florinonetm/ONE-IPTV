@@ -1,0 +1,6 @@
+{
+  "name": "ONE Player",
+  "description": "ONE Player IPTV - 31-day trial, oneapk.ro pairing with MAC and 6-digit device key, and Media3 multi-format streaming engine.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
